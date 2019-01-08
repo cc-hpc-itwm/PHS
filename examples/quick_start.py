@@ -1,10 +1,13 @@
+repository_root_dir = 'path/to/repository' #(example:'/home/NAME')
+
 import sys
-sys.path.append('/absolute/path/to/root/dir/in/which/your/parallel_hyperparameter_search/repository/resides')
+sys.path.append(repository_root_dir + '/parallel_hyperparameter_search/phs')
 
 from phs import parallel_hyperparameter_search
 
 hs = parallel_hyperparameter_search.ParallelHyperparameterSearch(experiment_name='experiment_griewank_1',
                                                                  working_dir='/absolute/path/to/a/folder/your/experiments/should/be/saved',
+                                                                 repository_root_dir,
                                                                  custom_module_root_dir='/absolute/path/to/root/dir/in/which/your/test_function/resides',
                                                                  custom_module_name='file_name_with_test_function_definition_(without_extension)',
                                                                  custom_function_name='test_griewank',

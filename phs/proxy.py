@@ -4,7 +4,12 @@ import os
 import json as js
 import numpy as np
 
-from phs import bayes
+import sys
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0,parentdir)
+import bayes
 
 def proxy_function(parallelization, fun, arg, auxiliary_information, with_bayesian=False, at_index=None, bayesian_placeholder_phrase=None, paths={}, data_types={}):
     start_time = dt.datetime.now()

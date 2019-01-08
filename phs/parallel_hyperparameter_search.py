@@ -19,7 +19,7 @@ from phs import utils
 #spec.loader.exec_module(rc)
 
 class ParallelHyperparameterSearch:
-    def __init__(self, experiment_name, working_dir, custom_module_root_dir, custom_module_name, custom_function_name, parallelization, parameter_data_types={}, monitor_root_dir=None, monitor_module_name=None, monitor_func_name_with_args={}):
+    def __init__(self, experiment_name, working_dir, repository_root_dir, custom_module_root_dir, custom_module_name, custom_function_name, parallelization, parameter_data_types={}, monitor_root_dir=None, monitor_module_name=None, monitor_func_name_with_args={}):
         self.custom_module_root_dir = custom_module_root_dir
         self.custom_module_name = custom_module_name
         self.custom_function_name = custom_function_name
@@ -44,6 +44,7 @@ class ParallelHyperparameterSearch:
         self.bayesian_placeholder_phrase = 888888
         self.experiment_name = experiment_name
         self.working_dir = working_dir
+        self.repository_root_dir = repository_root_dir
         self.experiment_dir = self.working_dir + '/' + self.experiment_name
         self.log_path = self.experiment_dir + '/log'
         self.monitor_path = self.experiment_dir + '/monitor'
@@ -244,10 +245,10 @@ class ParallelHyperparameterSearch:
             from dask import compute, delayed
             DASK_MASTER_IP = os.environ['DASK_MASTER_IP']
             DASK_MASTER_PORT = os.environ['DASK_MASTER_PORT']
-            with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='20s') as client:
-                client.upload_file('/home/HabelitzP/phs_root/phs/utils.py')
-                client.upload_file('/home/HabelitzP/phs_root/phs/bayes.py')
-                client.upload_file('/home/HabelitzP/phs_root/phs/proxy.py')
+            with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='50s') as client:
+                client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/utils.py')
+                client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/bayes.py')
+                client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/proxy.py')
                 client.upload_file(self.custom_module_root_dir + '/' + self.custom_module_name + '.py')
                 self.start_dask_execution_kernel(client, wait, as_completed)
                 self.as_completed_functions(as_completed)
