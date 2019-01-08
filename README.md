@@ -12,7 +12,7 @@ phs is an ergonomic tool for performing hyperparameter searches on numerous cump
 + (fault tolerance)
 
 ## Installation
-In order to use the full functionality of phs just clone this git repository to a local folder. Unless phs itself is based on the package called phs you have to simply import it in your script.
+In order to use the full functionality of phs just clone this git repository to a local folder. Since phs itself is based on the package called phs you have to simply import it in your script.
 
 ## Quick Start
 The easiest way to become familiar with the tool is to go through the following example of finding minima of the second order [Griewank function][2] which is a common test scenario for optimization algorithms. Code with respective output can be found in the examples folder.
@@ -20,6 +20,9 @@ The easiest way to become familiar with the tool is to go through the following 
 + Declare your phyton script as a function with a single argument named ```parameter```
 + Delete (or comment out) all hard coded parameter definitions you want to control with phs tool
 + add ```exec(parameter['hyperpar'],globals(),globals())```
++ return a meaningful parameter
+
+**exemplary test function**
 
 ```python
 import math as ma
@@ -29,16 +32,17 @@ def test_griewank(parameter):
     z = (x*x+y*y)/4000 - ma.cos(x)*ma.cos(y/ma.sqrt(2)) + 1
     return z
 ```
-+ create a new script to define a phs experiment
-+ to run this experiment just adapt argument 2 to 4 of the class instantiation.
++ create a new script to define a phs experiment (customize the arguments ```working_dir, custom_module_root_dir, custom_module_name``` of the class instantiation):
+
+**exemplary phs experiment**
 
 ```python
 from phs import parallel_hyperparameter_search
 
 hs = parallel_hyperparameter_search.ParallelHyperparameterSearch(experiment_name='experiment_griewank_1',
                                                                  working_dir='/absolute/path/to/a/folder/your/experiments/should/be/saved',
-                                                                 custom_module_root_dir='/absolute/path/to/root/dir/in/which/your/test_griewank/function/resides',
-                                                                 custom_module_name='file_name_with_test_griewank_definition',
+                                                                 custom_module_root_dir='/absolute/path/to/root/dir/in/which/your/test_function/resides',
+                                                                 custom_module_name='file_name_with_test_function_definition_(without_extension)',
                                                                  custom_function_name='test_griewank',
                                                                  parallelization='processes',
                                                                  parameter_data_types={'x':float,'y':float})

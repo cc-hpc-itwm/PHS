@@ -8,7 +8,7 @@ def test_quadratic(parameter):
 def test_rosenbrock(parameter):
     # x [-5,10]
     # y [-5,10]
-    # min at ()
+    # min 0 at (1,1)
     exec(parameter['hyperpar'],globals(),globals())
     z = (1-x)**2 + 100* ((y-x**2))**2
     return z

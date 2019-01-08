@@ -1,15 +1,12 @@
 import sys
-sys.path.append('/home/HabelitzP/phs_root')
+sys.path.append('/absolute/path/to/root/dir/in/which/your/parallel_hyperparameter_search/repository/resides')
 
 from phs import parallel_hyperparameter_search
 
 hs = parallel_hyperparameter_search.ParallelHyperparameterSearch(experiment_name='experiment_griewank_1',
-                                                                 working_dir='/home/HabelitzP/phs_root/examples',
-                                                                 #'/absolute/path/to/a/folder/your/experiments/should/be/saved'
-                                                                 custom_module_root_dir='/home/HabelitzP/phs_root/examples',
-                                                                 #'/absolute/path/to/root/dir/in/which/your/test_griewank/function/resides'
-                                                                 custom_module_name='test_functions',
-                                                                 #'file_name_with_test_griewank_definition'
+                                                                 working_dir='/absolute/path/to/a/folder/your/experiments/should/be/saved',
+                                                                 custom_module_root_dir='/absolute/path/to/root/dir/in/which/your/test_function/resides',
+                                                                 custom_module_name='file_name_with_test_function_definition_(without_extension)',
                                                                  custom_function_name='test_griewank',
                                                                  parallelization='processes',
                                                                  parameter_data_types={'x':float,'y':float})
