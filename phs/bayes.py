@@ -6,7 +6,7 @@ import sklearn.gaussian_process as gp
 from scipy.stats import norm
 from scipy.optimize import minimize
 
-import utils
+from . import utils
 
 def compute_bayesian_suggestion(at_index, bayesian_placeholder_phrase, paths, data_types):
     
