@@ -14,12 +14,8 @@ from shutil import copy2
 from phs import proxy
 from phs import utils
 
-#spec = importlib.util.spec_from_file_location("Record", "/home/HabelitzP/record_root/record/record.py")
-#rc = importlib.util.module_from_spec(spec)
-#spec.loader.exec_module(rc)
-
 class ParallelHyperparameterSearch:
-    def __init__(self, experiment_name, working_dir, repository_root_dir, custom_module_root_dir, custom_module_name, custom_function_name, parallelization, parameter_data_types={}, monitor_root_dir=None, monitor_module_name=None, monitor_func_name_with_args={}):
+    def __init__(self, experiment_name, working_dir, custom_module_root_dir, custom_module_name, custom_function_name, parallelization, parameter_data_types={}, monitor_root_dir=None, monitor_module_name=None, monitor_func_name_with_args={}):
         self.custom_module_root_dir = custom_module_root_dir
         self.custom_module_name = custom_module_name
         self.custom_function_name = custom_function_name
@@ -44,9 +40,9 @@ class ParallelHyperparameterSearch:
         self.bayesian_placeholder_phrase = 888888
         self.experiment_name = experiment_name
         self.working_dir = working_dir
-        self.repository_root_dir = repository_root_dir
         self.experiment_dir = self.working_dir + '/' + self.experiment_name
         self.log_path = self.experiment_dir + '/log'
+        self.log_file_path = self.log_path + '/' + 'log_frame.txt'
         self.monitor_path = self.experiment_dir + '/monitor'
         self.swap_path = self.experiment_dir + '/swap_files'
         self.worker_save_path = self.experiment_dir + '/insights'
@@ -59,7 +55,7 @@ class ParallelHyperparameterSearch:
         self.path_to_bayesian_options_round_digits_frame = self.swap_path + '/bayesian_options_round_digits'
         self.parallelization = parallelization
         self.symbol_for_best = '+'
-        
+
         if os.path.exists(self.working_dir) and os.path.isdir(self.working_dir):
             if os.path.exists(self.experiment_dir) and os.path.isdir(self.experiment_dir):
                 raise ValueError('directory ' + self.experiment_dir + ' already exists. Please choose a different experiment name.')
@@ -72,24 +68,24 @@ class ParallelHyperparameterSearch:
                 os.mkdir(self.source_code)
         else:
             raise ValueError('directory ' + self.working_dir + ' doesn\'t exist.')
-        
+
         copy2(self.custom_module_root_dir + '/' + self.custom_module_name + '.py', self.source_code + '/' + self.custom_module_name + '.py')
-        
+
         sys.path.append(self.custom_module_root_dir)
         self.custom_module = importlib.import_module(self.custom_module_name)
-        self.custom_function = getattr(self.custom_module,self.custom_function_name)
-        
+        self.custom_function = getattr(self.custom_module, self.custom_function_name)
+
         if self.monitor_root_dir:
             sys.path.append(self.monitor_root_dir)
         if self.monitor_module_name:
             self.monitor_module = importlib.import_module(self.monitor_module_name)
-        
+
         self.monitor_functions_dict = {}
         for func_name in self.monitor_func_name_with_args:
-            self.monitor_functions_dict[func_name] = getattr(self.monitor_module,func_name)
-            
+            self.monitor_functions_dict[func_name] = getattr(self.monitor_module, func_name)
 
-    def add_random_numeric_parameter(self,parameter_name,bounds,distribution,dist_options={},round_digits=None):
+
+    def add_random_numeric_parameter(self,parameter_name,bounds,distribution, dist_options={},round_digits=None):
         value = bounds[0] + rd.random() * (bounds[1] - bounds[0])
         if round_digits is not None:
             value = round(value, round_digits)
@@ -97,19 +93,19 @@ class ParallelHyperparameterSearch:
                 value = int(value)
         self.parameter_dict[parameter_name] = value
         self.bayesian_register_dict[parameter_name] = 0
-        
+
     def add_random_parameter_from_list(self,parameter_name,lst):
         value = rd.choice(lst)
         self.parameter_dict[parameter_name] = value
         self.bayesian_register_dict[parameter_name] = 0
-        
+
     # TODO: https://github.com/jaberg/hyperopt/wiki/FMin
-    
+
     def add_numeric_parameter(self,parameter_name,value):
         self.parameter_dict[parameter_name] = value
         self.bayesian_register_dict[parameter_name] = 0
         # TODO
-        
+
     def add_bayesian_parameter(self,parameter_name,bounds,round_digits=None):
         self.parameter_dict[parameter_name] = self.bayesian_placeholder_phrase
         self.bayesian_register_dict[parameter_name] = 1
@@ -142,13 +138,13 @@ class ParallelHyperparameterSearch:
                 self.bayesian_options_bounds_low_frame = self.bayesian_options_bounds_low_frame.append(self.bayesian_options_bounds_low_dict,ignore_index=True,verify_integrity=True)
                 self.bayesian_options_bounds_high_frame = self.bayesian_options_bounds_high_frame.append(self.bayesian_options_bounds_high_dict,ignore_index=True,verify_integrity=True)
                 self.bayesian_options_round_digits_frame = self.bayesian_options_round_digits_frame.append(self.bayesian_options_round_digits_dict,ignore_index=True,verify_integrity=True)
-                
+
         self.parameter_dict = {}
         self.bayesian_register_dict = {}
         self.bayesian_options_bounds_low_dict = {}
         self.bayesian_options_bounds_high_dict = {}
         self.bayesian_options_round_digits_dict = {}
-        
+
         for par in self.data_types:
             self.parameter_frame[par] = self.parameter_frame[par].astype(self.data_types[par])
 
@@ -156,7 +152,7 @@ class ParallelHyperparameterSearch:
         with open(self.path_to_parameter_frame + '.txt','w') as f:
             f.write(self.parameter_frame.to_string())
         self.parameter_frame.to_csv(self.path_to_parameter_frame + '.csv',sep='\t',index=True,header=True)
-        
+
         self.bayesian_register_frame.to_pickle(self.path_to_bayesian_register_frame + '.pkl')
         with open(self.path_to_bayesian_register_frame + '.txt','w') as f:
             f.write(self.bayesian_register_frame.to_string())
@@ -170,25 +166,25 @@ class ParallelHyperparameterSearch:
         with open(self.path_to_bayesian_options_round_digits_frame + '.txt','w') as f:
             f.write(self.bayesian_options_round_digits_frame.to_string())
 
-            
+
     def show_parameter_set_dtypes(self):
         print(self.parameter_frame.dtypes)
-        
+
     def show_parameter_set(self):
         print(self.parameter_frame)
-        
+
     def show_bayesian_options_bounds_low_frame(self):
         print('bayesian_options_bounds_low_frame')
         print(self.bayesian_options_bounds_low_frame)
-        
+
     def show_bayesian_options_bounds_high_frame(self):
         print('bayesian_options_bounds_high_frame')
         print(self.bayesian_options_bounds_high_frame)
-        
+
     def show_bayesian_options_round_digits_frame(self):
         print('bayesian_options_round_digits_frame')
         print(self.bayesian_options_round_digits_frame)
-        
+
     def create_parameter_string_list(self):
         self.parameter_string_list = []
         list_of_dicts = self.parameter_frame.to_dict(orient='records')
@@ -200,18 +196,18 @@ class ParallelHyperparameterSearch:
             string = string.strip('{}')
             self.parameter_string_list.append(string)
         return self.parameter_string_list
-    
+
     def show_model_preview(self, preview_function_name):
         os.mkdir(self.model_preview_path)
         with open(self.model_preview_path + '/model_preview.txt', 'w') as f:
             with redirect_stdout(f):
                 self.model_preview_out(preview_function_name)
         self.model_preview_out(preview_function_name)
-        
+
     def model_preview_out(self, preview_function_name):
         self.preview_function_name = preview_function_name
         self.loaded_preview_function = getattr(self.custom_module, self.preview_function_name)
-        
+
         parameter_string_list_preview = self.create_parameter_string_list()
         parameter_index_list_preview = self.parameter_frame.index.values.tolist()
         list_of_parameter_dicts_preview = self.parameter_frame.astype(object).to_dict(orient='records')
@@ -224,7 +220,7 @@ class ParallelHyperparameterSearch:
                 string = string.replace("\"" + key + "\"",key)
             print('\nparameter set ' + str(i) + ':')
             self.loaded_preview_function(string)
-    
+
     def start_execution(self):
         if self.parallelization == 'processes':
             from concurrent.futures import ProcessPoolExecutor as PoolExecutor
@@ -232,37 +228,37 @@ class ParallelHyperparameterSearch:
             with PoolExecutor(max_workers=4) as executor:
                 self.start_processes_execution_kernel(executor, wait, as_completed)
                 self.as_completed_functions(as_completed)
-                
+
         elif self.parallelization == 'mpi':
             from mpi4py.futures import MPIPoolExecutor as PoolExecutor
             from mpi4py.futures import wait, as_completed
             with PoolExecutor(max_workers=2) as executor:
                 self.start_mpi_execution_kernel(executor, wait, as_completed)
                 self.as_completed_functions(as_completed)
-                
+
         elif self.parallelization == 'dask':
             from dask.distributed import Client, progress, as_completed, scheduler, wait
             from dask import compute, delayed
             DASK_MASTER_IP = os.environ['DASK_MASTER_IP']
             DASK_MASTER_PORT = os.environ['DASK_MASTER_PORT']
             with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='50s') as client:
-                client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/utils.py')
-                client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/bayes.py')
-                client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/proxy.py')
+                #client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/utils.py')
+                #client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/bayes.py')
+                #client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/proxy.py')
                 client.upload_file(self.custom_module_root_dir + '/' + self.custom_module_name + '.py')
                 self.start_dask_execution_kernel(client, wait, as_completed)
                 self.as_completed_functions(as_completed)
-        
+
         #if 'final' in self.plot_modus and self.plots:
         #    print('\n',end='')
         #    self.refresh_plot(contour=True)
         return 1
-                
+
     def start_processes_execution_kernel(self, executor, wait, as_completed):
         parameter_string_list = self.create_parameter_string_list()
         parameter_index_list = self.parameter_frame.index.values.tolist()
         paths={'swap_path':self.swap_path, 'path_to_bayesian_options_bounds_low_frame':self.path_to_bayesian_options_bounds_low_frame, 'path_to_bayesian_options_bounds_high_frame':self.path_to_bayesian_options_bounds_high_frame, 'path_to_bayesian_options_round_digits_frame':self.path_to_bayesian_options_round_digits_frame}
-        
+
         list_of_parameter_dicts = self.parameter_frame.astype(object).to_dict(orient='records')
         for i in parameter_index_list:
             parameter_dict_i = list_of_parameter_dicts[i]
@@ -272,12 +268,12 @@ class ParallelHyperparameterSearch:
             else:
                 self.sub_future.append(executor.submit(proxy.proxy_function, self.parallelization, self.custom_function, arg=parameter_dict_i, auxiliary_information=auxiliary_information, with_bayesian=True, at_index=i, bayesian_placeholder_phrase=self.bayesian_placeholder_phrase, paths=paths, data_types=self.data_types))
         return 1
-        
+
     def start_mpi_execution_kernel(self, executor, wait, as_completed):
         parameter_string_list = self.create_parameter_string_list()
         parameter_index_list = self.parameter_frame.index.values.tolist()
         paths={'swap_path':self.swap_path, 'path_to_bayesian_options_bounds_low_frame':self.path_to_bayesian_options_bounds_low_frame, 'path_to_bayesian_options_bounds_high_frame':self.path_to_bayesian_options_bounds_high_frame, 'path_to_bayesian_options_round_digits_frame':self.path_to_bayesian_options_round_digits_frame}
-        
+
         list_of_parameter_dicts = self.parameter_frame.astype(object).to_dict(orient='records')
         for i in parameter_index_list:
             parameter_dict_i = list_of_parameter_dicts[i]
@@ -287,12 +283,12 @@ class ParallelHyperparameterSearch:
             else:
                 self.sub_future.append(executor.submit(proxy.proxy_function, self.parallelization, self.custom_function, arg=parameter_dict_i, auxiliary_information=auxiliary_information, with_bayesian=True, at_index=i, bayesian_placeholder_phrase=self.bayesian_placeholder_phrase, paths=paths, data_types=self.data_types))
         return 1
-        
+
     def start_dask_execution_kernel(self, executor, wait, as_completed):
         parameter_string_list = self.create_parameter_string_list()
         parameter_index_list = self.parameter_frame.index.values.tolist()
         paths={'swap_path':self.swap_path, 'path_to_bayesian_options_bounds_low_frame':self.path_to_bayesian_options_bounds_low_frame, 'path_to_bayesian_options_bounds_high_frame':self.path_to_bayesian_options_bounds_high_frame, 'path_to_bayesian_options_round_digits_frame':self.path_to_bayesian_options_round_digits_frame}
-        
+
         list_of_parameter_dicts = self.parameter_frame.astype(object).to_dict(orient='records')
         for i in parameter_index_list:
             parameter_dict_i = list_of_parameter_dicts[i]
@@ -302,14 +298,21 @@ class ParallelHyperparameterSearch:
             else:
                 self.sub_future.append(executor.submit(proxy.proxy_function, self.parallelization, self.custom_function, arg=parameter_dict_i, auxiliary_information=auxiliary_information, with_bayesian=True, at_index=i, bayesian_placeholder_phrase=self.bayesian_placeholder_phrase, paths=paths, data_types=self.data_types, priority=-10, fifo_timeout='0ms'))
         return 1
-        
+
     def as_completed_functions(self, as_completed):
-        for f in as_completed(self.sub_future):
+        print('\tparallelized function:\t\t\'%s\'' % (self.custom_function_name))
+        print('\tlocated in:\t\t\t\'%s\'' % (self.custom_module_root_dir + '/' + self.custom_module_name))
+        print('\tparallelized with:\t\t\'%s\'' % (self.parallelization))
+        print('\texperiment results saved in:\t\'%s\':\t' % (self.experiment_dir), end='\n')
+        print('\twatch individual tasks :\t\'watch -5 less %s\'' % (self.log_file_path))
+        for count_finished, f in enumerate(as_completed(self.sub_future), 1):
+            print('finished tasks:\t%i of %i' % (count_finished, len(self.sub_future)), end='\r')
             self.refresh_log()
             self.swap_files()
-            self.monitor()
+            self.monitor_functions()
+        print('\n')
         return 1
-    
+
     def refresh_log(self):
         start_time = time.time()
         self.log_frame = self.parameter_frame.copy(deep=True)
@@ -323,7 +326,7 @@ class ParallelHyperparameterSearch:
         best_i = -1
         for i in range(len(self.sub_future)):
             if self.parallelization == 'processes':
-                self.log_frame.loc[i,'state'] = self.sub_future[i]._state
+                self.log_frame.loc[i, 'state'] = self.sub_future[i]._state
                 if self.sub_future[i]._state == 'FINISHED':
                     self.log_frame.loc[i,'result'] = (self.sub_future[i].result())[0]
                     self.log_frame.loc[i,'started'] = (self.sub_future[i].result())[1]
@@ -370,12 +373,12 @@ class ParallelHyperparameterSearch:
         if best_i != -1:
             self.log_frame.loc[best_i,'best'] = self.symbol_for_best
         self.log_frame = self.log_frame.applymap(lambda x: round(x, 4) if isinstance(x, (int, float)) else x)
-        with open(self.log_path + '/log_frame.txt','w') as f:
+        with open(self.log_file_path,'w') as f:
             f.write(self.log_frame.to_string())
-        
-        print('\nrefresh log:\t%.3f' %(time.time()-start_time), end='\t')
+
+        #print('\nrefresh log:\t%.3f' %(time.time()-start_time), end='\t')
         return 1
-    
+
     def swap_files(self):
         start_time = time.time()
         i=1
@@ -391,16 +394,16 @@ class ParallelHyperparameterSearch:
         self.parameter_frame.to_pickle(current_folder + '/parameter_frame.pkl')
         with open(current_folder + '/log_frame.txt','w') as f:
             f.write(self.log_frame.to_string())
-        print('swap files:\t%.3f' %(time.time()-start_time), end='\t')
+        #print('swap files:\t%.3f' %(time.time()-start_time), end='\t')
         return 1
-        
-    def monitor(self):
+
+    def monitor_functions(self):
         start_time = time.time()
         for monitor_function_string in self.monitor_func_name_with_args:
             kwargs_dict = self.monitor_func_name_with_args[monitor_function_string]
             kwargs_dict['monitor_path'] = self.monitor_path
             kwargs_dict['swap_path'] = self.swap_path
             self.monitor_functions_dict[monitor_function_string](**kwargs_dict)
-        
-        print('refresh plot:\t%.3f' %(time.time()-start_time), end='\t')
+
+        #print('refresh plot:\t%.3f' %(time.time()-start_time), end='\t')
         return 1
