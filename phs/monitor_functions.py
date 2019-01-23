@@ -9,7 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import ConnectionPatch
 
 import utils
-    
+
 
 def plot_3d(first, second, third, name, monitor_path, swap_path, contour=False):
     save_dir = monitor_path + '/' + name
@@ -28,17 +28,17 @@ def plot_3d(first, second, third, name, monitor_path, swap_path, contour=False):
     marker_bayes = '+'
     parameter_index_list = current_log_frame.index.values.tolist()
     for i in parameter_index_list:
-        if current_log_frame.loc[i,'result'] != None:
-            data_1 = current_log_frame.loc[i,first]
+        if current_log_frame.loc[i, 'result'] != None:
+            data_1 = current_log_frame.loc[i, first]
             data_1_list.append(data_1)
-            data_2 = current_log_frame.loc[i,second]
+            data_2 = current_log_frame.loc[i, second]
             data_2_list.append(data_2)
-            data_3 = current_log_frame.loc[i,third]
+            data_3 = current_log_frame.loc[i, third]
             data_3_list.append(data_3)
             i_list.append(i)
-            if (first != 'result' and bayesian_register_frame.loc[i,first] == 1) or\
-            (second != 'result' and bayesian_register_frame.loc[i,second] == 1) or\
-            (third != 'result' and bayesian_register_frame.loc[i,third] == 1):
+            if (first != 'result' and bayesian_register_frame.loc[i, first] == 1) or\
+                (second != 'result' and bayesian_register_frame.loc[i, second] == 1) or\
+                    (third != 'result' and bayesian_register_frame.loc[i, third] == 1):
                 marker_flag.append('bayes')
             else:
                 marker_flag.append('no bayes')
@@ -67,13 +67,16 @@ def plot_3d(first, second, third, name, monitor_path, swap_path, contour=False):
         data_3_list_max = max(data_3_list)
         colormap = cm.jet
 
-        fig_2d = plt.figure(figsize=(10,10))
-        ax_2d = fig_2d.add_subplot(1,1,1)
-        ax_2d.scatter(data_1_best,data_2_best,s=250,edgecolors="k",facecolors='none',marker='o')
-        ax_2d.scatter(data_1_list_no_bayes,data_2_list_no_bayes,c=data_3_list_no_bayes, marker = marker_no_bayes, cmap = colormap,vmin=data_3_list_min, vmax=data_3_list_max)
-        img_2d = ax_2d.scatter(data_1_list_bayes,data_2_list_bayes,c=data_3_list_bayes, marker = marker_bayes, cmap = colormap,vmin=data_3_list_min, vmax=data_3_list_max)
-        for a,b,d in zip(data_1_list,data_2_list,i_list):
-            ax_2d.text(a,b,d)
+        fig_2d = plt.figure(figsize=(10, 10))
+        ax_2d = fig_2d.add_subplot(1, 1, 1)
+        ax_2d.scatter(data_1_best, data_2_best, s=250,
+                      edgecolors="k", facecolors='none', marker='o')
+        ax_2d.scatter(data_1_list_no_bayes, data_2_list_no_bayes, c=data_3_list_no_bayes,
+                      marker=marker_no_bayes, cmap=colormap, vmin=data_3_list_min, vmax=data_3_list_max)
+        img_2d = ax_2d.scatter(data_1_list_bayes, data_2_list_bayes, c=data_3_list_bayes,
+                               marker=marker_bayes, cmap=colormap, vmin=data_3_list_min, vmax=data_3_list_max)
+        for a, b, d in zip(data_1_list, data_2_list, i_list):
+            ax_2d.text(a, b, d)
         divider = make_axes_locatable(ax_2d)
         cax1 = divider.append_axes("right", size="5%", pad=0.05)
         cbar_2d = fig_2d.colorbar(img_2d, cax=cax1)
@@ -85,24 +88,25 @@ def plot_3d(first, second, third, name, monitor_path, swap_path, contour=False):
 
         string_in_data = False
         for val in data_1_list:
-            if isinstance(val,str):
+            if isinstance(val, str):
                 string_in_data = True
                 break
         if not string_in_data:
             for val in data_2_list:
-                if isinstance(val,str):
+                if isinstance(val, str):
                     string_in_data = True
                     break
         if not string_in_data:
             for val in data_3_list:
-                if isinstance(val,str):
+                if isinstance(val, str):
                     string_in_data = True
                     break
 
         if contour and not string_in_data:
-            tricontour_levels=np.linspace(min(data_3_list),max(data_3_list),num=10)
+            tricontour_levels = np.linspace(min(data_3_list), max(data_3_list), num=10)
             tricontour_levels = tricontour_levels[1:-1]
-            ax_2d.tricontour(data_1_list,data_2_list,data_3_list, levels=tricontour_levels, linewidths=1, cmap = colormap)
+            ax_2d.tricontour(data_1_list, data_2_list, data_3_list,
+                             levels=tricontour_levels, linewidths=1, cmap=colormap)
             fig_2d.savefig(save_dir+'_contour' + '.png', bbox_inches='tight')
             fig_2d.savefig(save_dir+'_contour' + '.pdf', bbox_inches='tight')
         plt.close(fig_2d)
@@ -131,27 +135,27 @@ def create_worker_timeline(name, monitor_path, swap_path):
 
     plt.switch_backend('agg')
     plt.ioff()
-    fig = plt.figure(figsize=(10,2))
-    ax = fig.add_subplot(1,1,1)
+    fig = plt.figure(figsize=(10, 2))
+    ax = fig.add_subplot(1, 1, 1)
     parameter_index_list = current_log_frame.index.values.tolist()
     empty = True
     for i in parameter_index_list:
-        if not math.isnan(current_log_frame.loc[i,'result']):
+        if not math.isnan(current_log_frame.loc[i, 'result']):
             empty = False
-            worker = str(current_log_frame.loc[i,'worker'])
-            started = current_log_frame.loc[i,'started']
-            ended = current_log_frame.loc[i,'ended']
-            ax.hlines(y=worker, xmin=started, xmax=ended ,color='b')
+            worker = str(current_log_frame.loc[i, 'worker'])
+            started = current_log_frame.loc[i, 'started']
+            ended = current_log_frame.loc[i, 'ended']
+            ax.hlines(y=worker, xmin=started, xmax=ended, color='b')
             ax.scatter(started, worker, marker='^', c='g')
             ax.scatter(ended, worker, marker='v', c='r')
     if not empty:
         ax.set_xlabel('time')
-        #ax.set_ylabel('')
+        # ax.set_ylabel('')
         fig.savefig(save_dir + '.png', bbox_inches='tight')
         fig.savefig(save_dir + '.pdf', bbox_inches='tight')
     plt.close()
     return 1
-    
+
 
 def create_parameter_combination(name, monitor_path, swap_path):
     save_dir = monitor_path + '/' + name
@@ -171,8 +175,8 @@ def create_parameter_combination(name, monitor_path, swap_path):
     marker = []
     parameter_index_list = current_log_frame.index.values.tolist()
     for i in parameter_index_list:
-        if not math.isnan(current_log_frame.loc[i,'result']):
-            parameter_result.append(current_log_frame.loc[i,'result'])
+        if not math.isnan(current_log_frame.loc[i, 'result']):
+            parameter_result.append(current_log_frame.loc[i, 'result'])
         else:
             parameter_result.append('no_result_yet')
         for name_j in parameter_names:
@@ -182,8 +186,8 @@ def create_parameter_combination(name, monitor_path, swap_path):
                 parameter_values[i].append(i)
                 marker[i].append('d')
             else:
-                parameter_values[i].append(current_log_frame.loc[i,name_j])
-                if bayesian_register_frame.loc[i,name_j] == 0:
+                parameter_values[i].append(current_log_frame.loc[i, name_j])
+                if bayesian_register_frame.loc[i, name_j] == 0:
                     marker[i].append('o')
                 else:
                     marker[i].append('+')
@@ -195,7 +199,7 @@ def create_parameter_combination(name, monitor_path, swap_path):
         del parameter_result[index]
         del parameter_values[index]
         del marker[index]
-    
+
     rgba_color = []
     norm = colors.Normalize(vmin=min(parameter_result), vmax=max(parameter_result))
     index_best = np.argmin(np.array(parameter_result))
@@ -204,25 +208,27 @@ def create_parameter_combination(name, monitor_path, swap_path):
 
     plt.switch_backend('agg')
     plt.ioff()
-    fig = plt.figure(figsize=(10,2*len(parameter_names)))
+    fig = plt.figure(figsize=(10, 2*len(parameter_names)))
     gs = gridspec.GridSpec(len(parameter_names), 1)
     gs.update(wspace=0.025, hspace=4.5)
     ax = []
-    for i,name_j in enumerate(parameter_names):
+    for i, name_j in enumerate(parameter_names):
         ax.append(plt.subplot(gs[i]))
         ax[i].set_ylabel(parameter_names[i])
         ax[i].set_yticks([])
 
-    for i,set_i in enumerate(parameter_values):
+    for i, set_i in enumerate(parameter_values):
         if i == index_best:
-            for j,par_j in enumerate(set_i):
-                ax[j].plot(par_j, 0, marker='o', markersize=15, markeredgecolor="k", markerfacecolor='None', markeredgewidth=2)
-        for j,par_j in enumerate(set_i):
+            for j, par_j in enumerate(set_i):
+                ax[j].plot(par_j, 0, marker='o', markersize=15, markeredgecolor="k",
+                           markerfacecolor='None', markeredgewidth=2)
+        for j, par_j in enumerate(set_i):
             ax[j].plot(par_j, 0, marker=marker[i][j], color=rgba_color[i])
-        for j,par_j in enumerate(set_i[0:-1]):
-            xyA = (set_i[j],0)
-            xyB = (set_i[j+1],0)
-            con = ConnectionPatch(xyB, xyA, coordsA="data", coordsB="data", axesA=ax[j+1], axesB=ax[j], color=rgba_color[i])
+        for j, par_j in enumerate(set_i[0:-1]):
+            xyA = (set_i[j], 0)
+            xyB = (set_i[j+1], 0)
+            con = ConnectionPatch(xyB, xyA, coordsA="data", coordsB="data",
+                                  axesA=ax[j+1], axesB=ax[j], color=rgba_color[i])
             ax[j+1].add_artist(con)
     fig.savefig(save_dir + '.png', bbox_inches='tight')
     fig.savefig(save_dir + '.pdf', bbox_inches='tight')
