@@ -16,7 +16,7 @@ from phs import utils
 
 
 class ParallelHyperparameterSearch:
-    def __init__(self, experiment_name, working_dir, custom_module_root_dir, custom_module_name, custom_function_name, parallelization, parameter_data_types={}, monitor_root_dir=None, monitor_module_name=None, monitor_func_name_with_args={}):
+    def __init__(self, experiment_name, working_dir, custom_module_root_dir, custom_module_name, custom_function_name, parallelization, parameter_data_types={}, monitor_root_dir=None, monitor_module_name=None, monitor_func_name_with_args={}, provide_insights_path=False):
         self.custom_module_root_dir = custom_module_root_dir
         self.custom_module_name = custom_module_name
         self.custom_function_name = custom_function_name
@@ -44,10 +44,8 @@ class ParallelHyperparameterSearch:
         self.experiment_dir = self.working_dir + '/' + self.experiment_name
         self.log_path = self.experiment_dir + '/log'
         self.log_file_path = self.log_path + '/' + 'log_frame.txt'
-        self.monitor_path = self.experiment_dir + '/monitor'
         self.swap_path = self.experiment_dir + '/swap_files'
-        self.worker_save_path = self.experiment_dir + '/insights'
-        self.source_code = self.experiment_dir + '/source_code'
+        self.source_code = self.experiment_dir + '/source_code_func'
         self.model_preview_path = self.experiment_dir + '/model_preview'
         self.path_to_parameter_frame = self.swap_path + '/parameter_frame'
         self.path_to_bayesian_register_frame = self.swap_path + '/bayesian_register_frame'
@@ -64,10 +62,19 @@ class ParallelHyperparameterSearch:
             else:
                 os.mkdir(self.experiment_dir)
                 os.mkdir(self.log_path)
-                os.mkdir(self.monitor_path)
                 os.mkdir(self.swap_path)
-                os.mkdir(self.worker_save_path)
                 os.mkdir(self.source_code)
+
+            if self.monitor_root_dir is not None:
+                self.monitor_path = self.experiment_dir + '/monitor'
+                os.mkdir(self.monitor_path)
+
+            if provide_insights_path:
+                self.worker_save_path = self.experiment_dir + '/insights'
+                os.mkdir(self.worker_save_path)
+            else:
+                self.worker_save_path = False
+
         else:
             raise ValueError('directory ' + self.working_dir + ' doesn\'t exist.')
 
@@ -235,13 +242,12 @@ class ParallelHyperparameterSearch:
 
         elif self.parallelization == 'dask':
             from dask.distributed import Client, progress, as_completed, scheduler, wait
-            from dask import compute, delayed
             DASK_MASTER_IP = os.environ['DASK_MASTER_IP']
             DASK_MASTER_PORT = os.environ['DASK_MASTER_PORT']
             with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='50s') as client:
-                #client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/utils.py')
-                #client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/bayes.py')
-                #client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/proxy.py')
+                # client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/utils.py')
+                # client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/bayes.py')
+                # client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/proxy.py')
                 client.upload_file(self.custom_module_root_dir + '/' +
                                    self.custom_module_name + '.py')
                 self.start_dask_execution_kernel(client, wait, as_completed)
@@ -316,7 +322,7 @@ class ParallelHyperparameterSearch:
         for count_finished, f in enumerate(as_completed(self.sub_future), 1):
             print('finished tasks:\t%i of %i' % (count_finished, len(self.sub_future)), end='\r')
             self.refresh_log()
-            self.swap_files()
+            self.swap_files(count_finished)
             self.monitor_functions()
         print('\n')
         return 1
@@ -391,22 +397,23 @@ class ParallelHyperparameterSearch:
         #print('\nrefresh log:\t%.3f' %(time.time()-start_time), end='\t')
         return 1
 
-    def swap_files(self):
+    def swap_files(self, count_finished):
         start_time = time.time()
-        i = 1
-        current_folder = None
-        while True:
-            current_folder = self.swap_path + '/' + str(i).zfill(5)
-            if os.path.exists(current_folder) and os.path.isdir(current_folder):
-                i = i + 1
-            else:
-                break
+        i = count_finished
+        fill = 6
+        current_folder = self.swap_path + '/' + str(i).zfill(fill)
         os.mkdir(current_folder)
         self.log_frame.to_pickle(current_folder + '/log_frame.pkl')
         self.parameter_frame.to_pickle(current_folder + '/parameter_frame.pkl')
-        with open(current_folder + '/log_frame.txt', 'w') as f:
-            f.write(self.log_frame.to_string())
-        #print('swap files:\t%.3f' %(time.time()-start_time), end='\t')
+        # with open(current_folder + '/log_frame.txt', 'w') as f:
+        #     f.write(self.log_frame.to_string())
+
+        old_folder = self.swap_path + '/' + str(i-2).zfill(fill)
+        if os.path.exists(old_folder) and os.path.isdir(old_folder):
+            os.remove(old_folder + '/log_frame.pkl')
+            os.remove(old_folder + '/parameter_frame.pkl')
+            os.rmdir(old_folder)
+            #print('swap files:\t%.3f' %(time.time()-start_time), end='\t')
         return 1
 
     def monitor_functions(self):
