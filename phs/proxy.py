@@ -10,7 +10,20 @@ import inspect
 from . import bayes
 
 
-def proxy_function(parallelization, fun, arg, auxiliary_information, with_bayesian=False, at_index=None, bayesian_placeholder_phrase=None, paths={}, data_types={}):
+def proxy_function(parallelization,
+                   fun,
+                   arg,
+                   index,
+                   auxiliary_information,
+                   with_bayesian=False,
+                   bayesian_placeholder_phrase=None,
+                   paths={},
+                   data_types={},
+                   result_col_name=None,
+                   bayesian_register_dict={},
+                   bayesian_options_bounds_low_dict={},
+                   bayesian_options_bounds_high_dict={},
+                   bayesian_options_round_digits_dict={}):
     start_time = dt.datetime.now()
     # np.random.seed(int(dt.datetime.now().strftime('%f')))
     # t = float(np.random.rand(1))
@@ -24,8 +37,15 @@ def proxy_function(parallelization, fun, arg, auxiliary_information, with_bayesi
         my_save_path = False
     bayesian_replacement_dict = None
     if with_bayesian:
-        bayesian_replacement_dict = bayes.compute_bayesian_suggestion(
-            at_index, bayesian_placeholder_phrase, paths, data_types)
+        bayesian_replacement_dict = bayes.compute_bayesian_suggestion(index,
+                                                                      bayesian_placeholder_phrase,
+                                                                      paths,
+                                                                      data_types,
+                                                                      result_col_name,
+                                                                      bayesian_register_dict,
+                                                                      bayesian_options_bounds_low_dict,
+                                                                      bayesian_options_bounds_high_dict,
+                                                                      bayesian_options_round_digits_dict)
         for col in bayesian_replacement_dict:
             arg[col] = bayesian_replacement_dict[col]
     string = js.dumps(arg, separators=['\n', '='])
@@ -39,10 +59,10 @@ def proxy_function(parallelization, fun, arg, auxiliary_information, with_bayesi
     worker = None
     if parallelization == 'processes':
         worker = os.getpid()
-        return (result, start_time, end_time, worker, bayesian_replacement_dict)
+        return (index, result, start_time, end_time, worker, bayesian_replacement_dict)
     elif parallelization == 'mpi':
         worker = os.uname()[1]
-        return (result, start_time, end_time, worker, bayesian_replacement_dict)
+        return (index, result, start_time, end_time, worker, bayesian_replacement_dict)
     elif parallelization == 'dask':
         worker = os.uname()[1]
-        return (result, start_time, end_time, worker, bayesian_replacement_dict)
+        return (index, result, start_time, end_time, worker, bayesian_replacement_dict)

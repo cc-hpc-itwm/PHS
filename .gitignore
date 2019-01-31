@@ -8,3 +8,7 @@ docs/build/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# swap files
+*.swp
+*.swo

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
+import time
 import matplotlib.pyplot as plt
 from matplotlib import cm, colors, gridspec
 from matplotlib.mlab import griddata
@@ -11,11 +12,12 @@ from matplotlib.patches import ConnectionPatch
 import utils
 
 
-def plot_3d(first, second, third, name, monitor_path, swap_path, contour=False):
+def plot_3d(name, monitor_path, first, second, third, result_frame, additional_information_frame, path_to_bayesian_register_frame, contour=False):
+    start_time = time.time()
     save_dir = monitor_path + '/' + name
-    current_folder = utils.find_current_folder(swap_path)
-    current_log_frame = pd.read_pickle(current_folder + '/log_frame.pkl')
-    bayesian_register_frame = pd.read_pickle(swap_path + '/bayesian_register_frame.pkl')
+
+    current_log_frame = result_frame
+    bayesian_register_frame = pd.read_pickle(path_to_bayesian_register_frame + '.pkl')
 
     plt.switch_backend('agg')
     plt.ioff()
@@ -28,20 +30,19 @@ def plot_3d(first, second, third, name, monitor_path, swap_path, contour=False):
     marker_bayes = '+'
     parameter_index_list = current_log_frame.index.values.tolist()
     for i in parameter_index_list:
-        if current_log_frame.loc[i, 'result'] != None:
-            data_1 = current_log_frame.loc[i, first]
-            data_1_list.append(data_1)
-            data_2 = current_log_frame.loc[i, second]
-            data_2_list.append(data_2)
-            data_3 = current_log_frame.loc[i, third]
-            data_3_list.append(data_3)
-            i_list.append(i)
-            if (first != 'result' and bayesian_register_frame.loc[i, first] == 1) or\
-                (second != 'result' and bayesian_register_frame.loc[i, second] == 1) or\
-                    (third != 'result' and bayesian_register_frame.loc[i, third] == 1):
-                marker_flag.append('bayes')
-            else:
-                marker_flag.append('no bayes')
+        data_1 = current_log_frame.loc[i, first]
+        data_1_list.append(data_1)
+        data_2 = current_log_frame.loc[i, second]
+        data_2_list.append(data_2)
+        data_3 = current_log_frame.loc[i, third]
+        data_3_list.append(data_3)
+        i_list.append(i)
+        if (first != 'result' and bayesian_register_frame.loc[i, first] == 1) or\
+            (second != 'result' and bayesian_register_frame.loc[i, second] == 1) or\
+                (third != 'result' and bayesian_register_frame.loc[i, third] == 1):
+            marker_flag.append('bayes')
+        else:
+            marker_flag.append('no bayes')
     if data_1_list:
         indices_bayes = [i for i, x in enumerate(marker_flag) if x == 'bayes']
         indices_no_bayes = [i for i, x in enumerate(marker_flag) if x == 'no bayes']
@@ -84,32 +85,17 @@ def plot_3d(first, second, third, name, monitor_path, swap_path, contour=False):
         ax_2d.set_xlabel(first)
         ax_2d.set_ylabel(second)
         fig_2d.savefig(save_dir + '.png', bbox_inches='tight')
-        fig_2d.savefig(save_dir + '.pdf', bbox_inches='tight')
+        # fig_2d.savesfig(save_dir + '.pdf', bbox_inches='tight')
 
-        string_in_data = False
-        for val in data_1_list:
-            if isinstance(val, str):
-                string_in_data = True
-                break
-        if not string_in_data:
-            for val in data_2_list:
-                if isinstance(val, str):
-                    string_in_data = True
-                    break
-        if not string_in_data:
-            for val in data_3_list:
-                if isinstance(val, str):
-                    string_in_data = True
-                    break
-
-        if contour and not string_in_data:
+        if contour and len(data_1_list) >= 3:
             tricontour_levels = np.linspace(min(data_3_list), max(data_3_list), num=10)
             tricontour_levels = tricontour_levels[1:-1]
             ax_2d.tricontour(data_1_list, data_2_list, data_3_list,
                              levels=tricontour_levels, linewidths=1, cmap=colormap)
-            fig_2d.savefig(save_dir+'_contour' + '.png', bbox_inches='tight')
-            fig_2d.savefig(save_dir+'_contour' + '.pdf', bbox_inches='tight')
+            fig_2d.savefig(save_dir + '_contour' + '.png', bbox_inches='tight')
+            # fig_2d.savefig(save_dir+'_contour' + '.pdf', bbox_inches='tight')
         plt.close(fig_2d)
+        print('plot_3d:\t%.3f' % (time.time()-start_time), end='\n')
     return 1
 
     '''if not string_in_data:
@@ -128,93 +114,74 @@ def plot_3d(first, second, third, name, monitor_path, swap_path, contour=False):
             plt.close(fig_3d)'''
 
 
-def create_worker_timeline(name, monitor_path, swap_path):
+def create_worker_timeline(name, monitor_path, result_frame, additional_information_frame, path_to_bayesian_register_frame):
+    start_time = time.time()
     save_dir = monitor_path + '/' + name
-    current_folder = utils.find_current_folder(swap_path)
-    current_log_frame = pd.read_pickle(current_folder + '/log_frame.pkl')
 
     plt.switch_backend('agg')
     plt.ioff()
     fig = plt.figure(figsize=(10, 2))
     ax = fig.add_subplot(1, 1, 1)
-    parameter_index_list = current_log_frame.index.values.tolist()
-    empty = True
-    for i in parameter_index_list:
-        if not math.isnan(current_log_frame.loc[i, 'result']):
-            empty = False
-            worker = str(current_log_frame.loc[i, 'worker'])
-            started = current_log_frame.loc[i, 'started']
-            ended = current_log_frame.loc[i, 'ended']
-            ax.hlines(y=worker, xmin=started, xmax=ended, color='b')
-            ax.scatter(started, worker, marker='^', c='g')
-            ax.scatter(ended, worker, marker='v', c='r')
-    if not empty:
-        ax.set_xlabel('time')
-        # ax.set_ylabel('')
-        fig.savefig(save_dir + '.png', bbox_inches='tight')
-        fig.savefig(save_dir + '.pdf', bbox_inches='tight')
+    worker = additional_information_frame['worker'].values
+    started = additional_information_frame['started'].values
+    ended = additional_information_frame['ended'].values
+    ax.hlines(y=worker, xmin=started, xmax=ended, color='b')
+    ax.scatter(started, worker, marker='^', c='g')
+    ax.scatter(ended, worker, marker='v', c='r')
+    ax.set_xlabel('time')
+    # ax.set_ylabel('')
+    fig.savefig(save_dir + '.png', bbox_inches='tight')
+    # fig.savefig(save_dir + '.pdf', bbox_inches='tight')
     plt.close()
+    # print('create_worker_timeline:\t%.3f' % (time.time()-start_time), end='\n')
     return 1
 
 
-def create_parameter_combination(name, monitor_path, swap_path):
+def create_parameter_combination(name, monitor_path, result_frame, additional_information_frame, path_to_bayesian_register_frame):
+    start_time = time.time()
     save_dir = monitor_path + '/' + name
-    current_folder = utils.find_current_folder(swap_path)
-    current_log_frame = pd.read_pickle(current_folder + '/log_frame.pkl')
-    parameter_frame = pd.read_pickle(swap_path + '/parameter_frame.pkl')
-    bayesian_register_frame = pd.read_pickle(swap_path + '/bayesian_register_frame.pkl')
+
+    bayesian_register_frame = pd.read_pickle(path_to_bayesian_register_frame + '.pkl')
 
     index_string = 'index'
-    parameter_names = []
-    parameter_names.append(index_string)
-    for n in parameter_frame.columns.values.tolist():
-        parameter_names.append(n)
+    col_names = []
+    col_names.append(index_string)
+    col_names.extend(bayesian_register_frame.columns.values.tolist())
 
     parameter_values = []
-    parameter_result = []
     marker = []
-    parameter_index_list = current_log_frame.index.values.tolist()
-    for i in parameter_index_list:
-        if not math.isnan(current_log_frame.loc[i, 'result']):
-            parameter_result.append(current_log_frame.loc[i, 'result'])
-        else:
-            parameter_result.append('no_result_yet')
-        for name_j in parameter_names:
+    parameter_index_list = result_frame.index.values.tolist()
+    for i, index in enumerate(parameter_index_list):
+        for name_j in col_names:
             parameter_values.append([])
             marker.append([])
             if name_j == index_string:
-                parameter_values[i].append(i)
+                parameter_values[i].append(index)
                 marker[i].append('d')
             else:
-                parameter_values[i].append(current_log_frame.loc[i, name_j])
+                parameter_values[i].append(result_frame.loc[index, name_j])
                 if bayesian_register_frame.loc[i, name_j] == 0:
                     marker[i].append('o')
                 else:
                     marker[i].append('+')
-    to_delete = []
-    for i in parameter_index_list:
-        if parameter_result[i] == 'no_result_yet':
-            to_delete.append(i)
-    for index in sorted(to_delete, reverse=True):
-        del parameter_result[index]
-        del parameter_values[index]
-        del marker[index]
+
+    result = result_frame['result'].values
 
     rgba_color = []
-    norm = colors.Normalize(vmin=min(parameter_result), vmax=max(parameter_result))
-    index_best = np.argmin(np.array(parameter_result))
-    for i in parameter_result:
+    norm = colors.Normalize(vmin=min(result), vmax=max(result))
+    index_best = np.argmin(np.array(result))
+    for i in result:
         rgba_color.append(cm.jet(norm(i)))
 
     plt.switch_backend('agg')
     plt.ioff()
-    fig = plt.figure(figsize=(10, 2*len(parameter_names)))
-    gs = gridspec.GridSpec(len(parameter_names), 1)
+    fig = plt.figure(figsize=(10, 2*len(col_names)))
+    gs = gridspec.GridSpec(len(col_names), 1)
     gs.update(wspace=0.025, hspace=4.5)
     ax = []
-    for i, name_j in enumerate(parameter_names):
+    for i, name_j in enumerate(col_names):
         ax.append(plt.subplot(gs[i]))
-        ax[i].set_ylabel(parameter_names[i])
+        ax[i].set_ylabel(col_names[i])
         ax[i].set_yticks([])
 
     for i, set_i in enumerate(parameter_values):
@@ -231,6 +198,7 @@ def create_parameter_combination(name, monitor_path, swap_path):
                                   axesA=ax[j+1], axesB=ax[j], color=rgba_color[i])
             ax[j+1].add_artist(con)
     fig.savefig(save_dir + '.png', bbox_inches='tight')
-    fig.savefig(save_dir + '.pdf', bbox_inches='tight')
+    # fig.savefig(save_dir + '.pdf', bbox_inches='tight')
     plt.close()
+    # print('create_parameter_combination:\t%.3f' % (time.time()-start_time), end='\n')
     return 1
