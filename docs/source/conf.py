@@ -43,6 +43,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+    'sphinx.ext.autosectionlabel'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -51,8 +52,8 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
+
 
 # The master toctree document.
 master_doc = 'index'
@@ -78,16 +79,45 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'groundwork'
+html_theme = "alabaster"
+#html_theme = "sphinx-rtd-theme"
+#html_theme = 'groundwork'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
+
+#'alabaster' options
 html_theme_options = {
-	"sidebar_width": '250px',
-	"contribute": False,
-	"github_fork": False}
+'fixed_sidebar': 'True',
+'page_width': '1600px',#default 940px
+'sidebar_width': '350px'}#default 220px
+
+
+#'sphinx-rtd-theme' options
+'''html_theme_options = {
+    'canonical_url': '',
+    'analytics_id': 'UA-XXXXXXX-1',  #  Provided by Google in your dashboard
+    'logo_only': False,
+    'display_version': True,
+    'prev_next_buttons_location': 'bottom',
+    'style_external_links': False,
+    'vcs_pageview_mode': '',
+    # Toc options
+    'collapse_navigation': True,
+    'sticky_navigation': True,
+    'navigation_depth': 4,
+    'includehidden': True,
+    'titles_only': False
+}'''
+
+
+#'groundwork' options
+#html_theme_options = {
+#	"sidebar_width": '250px',
+#	"contribute": False,
+#	"github_fork": False}
 
 
 # Add any paths that contain custom static files (such as style sheets) here,

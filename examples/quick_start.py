@@ -12,20 +12,16 @@ hs = phs.ParallelHyperparameterSearch(
     custom_module_name='file_name_with_test_function_definition_(without_extension)',
     custom_function_name='test_griewank',
     parallelization='processes',
-    parameter_data_types={'x': float, 'y': float})
+    parameter_data_types_and_order=[('x', float), ('y', float)])
 
 for i in range(20):
-    hs.add_random_numeric_parameter(
-        parameter_name='x', bounds=[-5, 5], distribution='uniform', round_digits=3)
-    hs.add_random_numeric_parameter(
-        parameter_name='y', bounds=[-5, 5], distribution='uniform', round_digits=3)
+    hs.add_random_numeric_parameter(parameter_name='x', bounds=[-5, 5], round_digits=3)
+    hs.add_random_numeric_parameter(parameter_name='y', bounds=[-5, 5], round_digits=3)
     hs.register_parameter_set()
 
 for i in range(10):
     hs.add_bayesian_parameter(parameter_name='x', bounds=[-5, 5], round_digits=3)
     hs.add_bayesian_parameter(parameter_name='y', bounds=[-5, 5], round_digits=3)
     hs.register_parameter_set()
-
-hs.show_parameter_set()
 
 hs.start_execution()

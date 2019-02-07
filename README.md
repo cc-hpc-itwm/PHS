@@ -8,13 +8,15 @@ phs is an ergonomic tool for performing hyperparameter searches on numerous cump
 + possible search strategies are explicit specification, random search and Bayesian optimization
 + no limitation to the number of hyperparameter
 + parameter types and search strategies can be mixed for each parameter set as you like
-+ handy monitor and visualization functions for supervising the the progress are already built-in
++ handy monitor and visualization functions for supervising the progress are already built-in
 + (fault tolerance)
 
 ## Standalone Installation
-In order to use the full functionality of phs just clone this git repository to a local folder. Installation consists of executing the ```install.sh``` script, which appends the absolute path of your git repo permanently to the module search paths by creating a path configuration file (.pth)
+In order to use phs just clone this git repository to a local folder. Installation consists of executing the ```install.sh``` script, which appends the absolute path of your git repo permanently to the module search paths by creating a path configuration file (.pth). After that the following import should work:
 
-## Usage on Carme-Cluster
+```import phs.parallel_hyperparameter_search as phs  # standalone import```
+
+## Usage on the Carme-Cluster
 Since this project is a built-in package of [Carme][3] it is usable with ```import CarmeModules.HyperParameterSearch.phs.parallel_hyperparameter_search as phs```.
 
 ## Quick Start

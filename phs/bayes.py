@@ -12,19 +12,14 @@ from . import utils
 
 
 def compute_bayesian_suggestion(at_index,
-                                bayesian_placeholder_phrase,
                                 paths,
                                 data_types,
                                 result_col_name,
+                                bayesian_wait_for_all,
                                 bayesian_register_dict,
                                 bayesian_options_bounds_low_dict,
                                 bayesian_options_bounds_high_dict,
                                 bayesian_options_round_digits_dict):
-
-    # current_folder = utils.find_current_folder(paths['swap_path'])
-    # log_frame_rec = np.load(current_folder + '/log_frame.npy')
-    # current_log_frame = pd.DataFrame.from_records(log_frame_rec)
-    # current_log_frame = pd.read_pickle(current_folder + '/log_frame.pkl')
 
     bayesian_col_name_list = []
     for key in bayesian_register_dict:
@@ -39,20 +34,31 @@ def compute_bayesian_suggestion(at_index,
     result_file_path = paths['result_file_path']
 
     while True:
-        try:
-            os.mkdir(lock_result_path)
+        while True:
+            try:
+                os.mkdir(lock_result_path)
+                break
+            except OSError:
+                # print('read locked')
+                time.sleep(0.5)
+                continue
+
+        with open(result_file_path, 'r') as f:
+            current_result_frame = pd.read_csv(
+                f, index_col='index', usecols=columns_to_read)
+
+        if os.path.exists(lock_result_path) and os.path.isdir(lock_result_path):
+            os.rmdir(lock_result_path)
+        if not bayesian_wait_for_all:
             break
-        except OSError:
-            # print('read locked')
-            time.sleep(0.5)
-            continue
+        else:
+            if at_index <= len(current_result_frame.index):
+                break
+            else:
+                time.sleep(0.5)
 
-    with open(result_file_path, 'r') as f:
-        current_result_frame = pd.read_csv(
-            f, index_col='index', usecols=columns_to_read)
-
-    if os.path.exists(lock_result_path) and os.path.isdir(lock_result_path):
-        os.rmdir(lock_result_path)
+    print('bayesian at index %d sees %d results.' % (at_index, len(current_result_frame.index)))
+    print(current_result_frame)
 
     # important: values in bounds must have the same order as in xp according to the parameter names (col_names) they
     # belong to:

@@ -95,7 +95,7 @@ def plot_3d(name, monitor_path, first, second, third, result_frame, additional_i
             fig_2d.savefig(save_dir + '_contour' + '.png', bbox_inches='tight')
             # fig_2d.savefig(save_dir+'_contour' + '.pdf', bbox_inches='tight')
         plt.close(fig_2d)
-        print('plot_3d:\t%.3f' % (time.time()-start_time), end='\n')
+        # print('plot_3d:\t%.3f' % (time.time()-start_time), end='\n')
     return 1
 
     '''if not string_in_data:
