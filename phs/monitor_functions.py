@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
-import math
+import os
+import pickle
 import time
+import imageio
 import matplotlib.pyplot as plt
 from matplotlib import cm, colors, gridspec
 from matplotlib.mlab import griddata
@@ -9,12 +11,19 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import ConnectionPatch
 
-import utils
 
-
-def plot_3d(name, monitor_path, first, second, third, result_frame, additional_information_frame, path_to_bayesian_register_frame, contour=False):
+def plot_3d(name,
+            path_out,
+            first,
+            second,
+            third,
+            result_frame,
+            path_to_bayesian_register_frame,
+            contour=False,
+            animated=False,
+            **not_used_kwargs):
     start_time = time.time()
-    save_dir = monitor_path + '/' + name
+    save_dir = path_out + '/' + name
 
     current_log_frame = result_frame
     bayesian_register_frame = pd.read_pickle(path_to_bayesian_register_frame + '.pkl')
@@ -68,7 +77,7 @@ def plot_3d(name, monitor_path, first, second, third, result_frame, additional_i
         data_3_list_max = max(data_3_list)
         colormap = cm.jet
 
-        fig_2d = plt.figure(figsize=(10, 10))
+        fig_2d = plt.figure(figsize=(10.08, 10.08))
         ax_2d = fig_2d.add_subplot(1, 1, 1)
         ax_2d.scatter(data_1_best, data_2_best, s=250,
                       edgecolors="k", facecolors='none', marker='o')
@@ -84,25 +93,55 @@ def plot_3d(name, monitor_path, first, second, third, result_frame, additional_i
         cbar_2d.set_label(third)
         ax_2d.set_xlabel(first)
         ax_2d.set_ylabel(second)
-        fig_2d.savefig(save_dir + '.png', bbox_inches='tight')
-        # fig_2d.savesfig(save_dir + '.pdf', bbox_inches='tight')
+        if not animated:
+            fig_2d.savefig(save_dir + '.png', dpi=100)
+            # fig_2d.savesfig(save_dir + '.pdf', dpi=100)
+        else:
+            fig_2d.canvas.draw()
+            # Get the RGBA buffer from the figure
+            w, h = fig_2d.canvas.get_width_height()
+            buf_plain = np.fromstring(fig_2d.canvas.tostring_argb(), dtype=np.uint8)
+            buf_plain.shape = (w, h, 4)
+            # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
+            buf_plain = np.roll(buf_plain, 3, axis=2)
+            frame_array_dict_return = {}
+            frame_array_dict_return['plain'] = buf_plain
 
         if contour and len(data_1_list) >= 3:
             tricontour_levels = np.linspace(min(data_3_list), max(data_3_list), num=10)
             tricontour_levels = tricontour_levels[1:-1]
             ax_2d.tricontour(data_1_list, data_2_list, data_3_list,
                              levels=tricontour_levels, linewidths=1, cmap=colormap)
-            fig_2d.savefig(save_dir + '_contour' + '.png', bbox_inches='tight')
-            # fig_2d.savefig(save_dir+'_contour' + '.pdf', bbox_inches='tight')
+            if not animated:
+                fig_2d.savefig(save_dir + '_contour' + '.png', dpi=100)
+                # fig_2d.savefig(save_dir+'_contour' + '.pdf', dpi=100)
+                # with open(save_dir + '_contour' + '.pkl', 'wb') as f:
+                #     pickle.dump(fig_2d, f)
+            else:
+                fig_2d.canvas.draw()
+                # Get the RGBA buffer from the figure
+                w, h = fig_2d.canvas.get_width_height()
+                buf_contour = np.fromstring(fig_2d.canvas.tostring_argb(), dtype=np.uint8)
+                buf_contour.shape = (w, h, 4)
+                # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
+                buf_contour = np.roll(buf_contour, 3, axis=2)
+                frame_array_dict_return['contour'] = buf_contour
+
         plt.close(fig_2d)
-        # print('plot_3d:\t%.3f' % (time.time()-start_time), end='\n')
-    return 1
+        print('plot_3d:\t%.3f' % (time.time()-start_time), end='\n')
+
+    if not animated:
+        return 1
+    else:
+        return frame_array_dict_return
 
     '''if not string_in_data:
             fig_3d = plt.figure(figsize=(10,10))
             ax_3d = fig_3d.add_subplot(1,1,1,projection='3d')
-            ax_3d.scatter(data_1_list_no_bayes,data_2_list_no_bayes,data_3_list_no_bayes,c=data_3_list_no_bayes,marker='o', cmap=colormap,vmin=data_3_list_min, vmax=data_3_list_max)
-            ax_3d_scatter = ax_3d.scatter(data_1_list_bayes,data_2_list_bayes,data_3_list_bayes,c=data_3_list_bayes,marker='+', cmap=colormap,vmin=data_3_list_min, vmax=data_3_list_max)
+            ax_3d.scatter(data_1_list_no_bayes,data_2_list_no_bayes,data_3_list_no_bayes,
+                          c=data_3_list_no_bayes,marker='o', cmap=colormap,vmin=data_3_list_min, vmax=data_3_list_max)
+            ax_3d_scatter = ax_3d.scatter(data_1_list_bayes,data_2_list_bayes,data_3_list_bayes,
+                                          c=data_3_list_bayes,marker='+', cmap=colormap,vmin=data_3_list_min, vmax=data_3_list_max)
             for a,b,c,d in zip(data_1_list,data_2_list,data_3_list,i_list):
                 ax_3d.text(a,b,c,d)
             cbar_3d = fig_3d.colorbar(ax_3d_scatter)
@@ -114,17 +153,21 @@ def plot_3d(name, monitor_path, first, second, third, result_frame, additional_i
             plt.close(fig_3d)'''
 
 
-def create_worker_timeline(name, monitor_path, result_frame, additional_information_frame, path_to_bayesian_register_frame):
+def create_worker_timeline(name,
+                           path_out,
+                           additional_information_frame,
+                           **not_used_kwargs):
     start_time = time.time()
-    save_dir = monitor_path + '/' + name
+    save_dir = path_out + '/' + name
 
     plt.switch_backend('agg')
     plt.ioff()
     fig = plt.figure(figsize=(10, 2))
     ax = fig.add_subplot(1, 1, 1)
+
     worker = additional_information_frame['worker'].values
-    started = additional_information_frame['started'].values
-    ended = additional_information_frame['ended'].values
+    started = pd.to_datetime(additional_information_frame['started'].values)
+    ended = pd.to_datetime(additional_information_frame['ended'].values)
     ax.hlines(y=worker, xmin=started, xmax=ended, color='b')
     ax.scatter(started, worker, marker='^', c='g')
     ax.scatter(ended, worker, marker='v', c='r')
@@ -137,9 +180,14 @@ def create_worker_timeline(name, monitor_path, result_frame, additional_informat
     return 1
 
 
-def create_parameter_combination(name, monitor_path, result_frame, additional_information_frame, path_to_bayesian_register_frame):
+def create_parameter_combination(name,
+                                 path_out,
+                                 result_frame,
+                                 additional_information_frame,
+                                 path_to_bayesian_register_frame,
+                                 **not_used_kwargs):
     start_time = time.time()
-    save_dir = monitor_path + '/' + name
+    save_dir = path_out + '/' + name
 
     bayesian_register_frame = pd.read_pickle(path_to_bayesian_register_frame + '.pkl')
 

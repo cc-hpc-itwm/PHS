@@ -8,12 +8,10 @@ import sklearn.gaussian_process as gp
 from scipy.stats import norm
 from scipy.optimize import minimize
 
-from . import utils
-
 
 def compute_bayesian_suggestion(at_index,
                                 paths,
-                                data_types,
+                                data_types_unordered_dict,
                                 result_col_name,
                                 bayesian_wait_for_all,
                                 bayesian_register_dict,
@@ -57,8 +55,8 @@ def compute_bayesian_suggestion(at_index,
             else:
                 time.sleep(0.5)
 
-    print('bayesian at index %d sees %d results.' % (at_index, len(current_result_frame.index)))
-    print(current_result_frame)
+    # print('bayesian at index %d sees %d results.' % (at_index, len(current_result_frame.index)))
+    # print(current_result_frame)
 
     # important: values in bounds must have the same order as in xp according to the parameter names (col_names) they
     # belong to:
@@ -89,7 +87,8 @@ def compute_bayesian_suggestion(at_index,
     for i, col in enumerate(bayesian_col_name_list):
         if not ma.isnan(bayesian_options_round_digits_dict[col]):
             next_sample[i] = round(next_sample[i], int(bayesian_options_round_digits_dict[col]))
-        bayesian_replacement_dict[col] = next_sample[i].astype(data_types[col]).item()
+        bayesian_replacement_dict[col] = next_sample[i].astype(
+            data_types_unordered_dict[col]).item()
     return bayesian_replacement_dict
 
 

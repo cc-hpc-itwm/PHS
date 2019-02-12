@@ -1,8 +1,16 @@
-import os
+def set_default_value_to_optional_key(key, value, dict):
+    if key not in dict:
+        dict[key] = value
+    return dict[key]
 
 
-def find_current_folder(swap_path):
-    folder_list = next(os.walk(swap_path))[1]
-    folder_list.sort()
-    current_folder = swap_path + '/' + folder_list[-1]
-    return current_folder
+def print_section(header):
+    print('{:=^100}' .format(''))
+    print('{:=^100}' .format(' ' + header + ' '))
+    print('{:=^100}' .format(''))
+
+
+def print_subsection(header):
+    print('{:-^100}' .format(''))
+    print('{:-^100}' .format(' ' + header + ' '))
+    print('{:-^100}' .format(''))
