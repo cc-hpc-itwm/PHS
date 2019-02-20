@@ -6,42 +6,48 @@ import json as js
 import importlib
 import sys
 import pickle
+import pprint
 from contextlib import redirect_stdout
 from shutil import copy2
 
-from phs import proxy
-from phs import utils
+import phs.proxy
+import phs.bayes
+import phs.utils
 
 
 class ParallelHyperparameterSearch:
     def __init__(self, **kwargs_dict):
-        utils.print_section(header='ParallelHyperparameterSearch')
+        phs.utils.print_section(header='ParallelHyperparameterSearch')
         if 'config_json_path' in kwargs_dict:
             with open(kwargs_dict['config_json_path']) as f:
                 config_dict = js.load(f)
         else:
             config_dict = kwargs_dict
 
+        self.experiment_parent_dir = config_dict['experiment_dir']
         self.experiment_name = config_dict['experiment_name']
-        self.working_dir = config_dict['working_dir']
-        self.custom_module_root_dir = config_dict['custom_module_root_dir']
-        self.custom_module_name = config_dict['custom_module_name']
-        self.custom_function_name = config_dict['custom_function_name']
+        self.target_module_root_dir = config_dict['target_module_root_dir']
+        self.target_module_name = config_dict['target_module_name']
+        self.target_function_name = config_dict['target_function_name']
         self.parameter_definitions_root_dir_in = config_dict['parameter_definitions_root_dir_in']
         self.parallelization = config_dict['parallelization']
 
-        self.save_parameter_definitions = utils.set_default_value_to_optional_key(
+        self.local_processes_num_workers = phs.utils.set_default_value_to_optional_key(
+            'local_processes_num_workers', 2, config_dict)
+        self.save_parameter_definitions = phs.utils.set_default_value_to_optional_key(
             'save_parameter_definitions', True, config_dict)
-        self.bayesian_wait_for_all = utils.set_default_value_to_optional_key(
+        self.bayesian_wait_for_all = phs.utils.set_default_value_to_optional_key(
             'bayesian_wait_for_all', False, config_dict)
-        self.monitor_root_dir = utils.set_default_value_to_optional_key(
+        self.monitor_root_dir = phs.utils.set_default_value_to_optional_key(
             'monitor_root_dir', None, config_dict)
-        self.monitor_module_name = utils.set_default_value_to_optional_key(
+        self.monitor_module_name = phs.utils.set_default_value_to_optional_key(
             'monitor_module_name', None, config_dict)
-        self.monitor_func_name_with_args = utils.set_default_value_to_optional_key(
+        self.monitor_func_name_with_args = phs.utils.set_default_value_to_optional_key(
             'monitor_func_name_with_args', {}, config_dict)
-        self.provide_worker_path = utils.set_default_value_to_optional_key(
-            'provide_worker_path', False, config_dict)
+        self.provide_worker_path = phs.utils.set_default_value_to_optional_key(
+            'provide_worker_path', True, config_dict)
+        self.redirect_stdout = phs.utils.set_default_value_to_optional_key(
+            'redirect_stdout', True, config_dict)
 
         for key, value in config_dict.items():
             print('\t{0:40}{1:}'.format(key, value))
@@ -65,7 +71,7 @@ class ParallelHyperparameterSearch:
         self.bayesian_options_round_digits_frame = pd.DataFrame()
         self.parameter_string_list = []
         self.parameter_index_list = []
-        self.experiment_dir = self.working_dir + '/' + self.experiment_name
+        self.experiment_dir = self.experiment_parent_dir + '/' + self.experiment_name
         self.result_path = self.experiment_dir + '/results'
         self.parameter_definitions_root_dir_out = self.experiment_dir + '/parameter_definitions'
         self.result_file_path = self.result_path + '/result_frame.csv'
@@ -112,8 +118,9 @@ class ParallelHyperparameterSearch:
         self.symbol_for_best = '+'
         self.expression_data_type_flag = 'expr'
         self.append_additional_information_init = False
+        self.pp = pprint.PrettyPrinter(indent=4)
 
-        if os.path.exists(self.working_dir) and os.path.isdir(self.working_dir):
+        if os.path.exists(self.experiment_parent_dir) and os.path.isdir(self.experiment_parent_dir):
             if os.path.exists(self.experiment_dir) and os.path.isdir(self.experiment_dir):
                 raise ValueError('directory ' + self.experiment_dir +
                                  ' already exists. Please choose a different experiment name.')
@@ -127,14 +134,14 @@ class ParallelHyperparameterSearch:
                 self.monitor_path = self.experiment_dir + '/monitor'
                 os.mkdir(self.monitor_path)
 
-            if self.provide_worker_path:
+            if self.provide_worker_path or self.redirect_stdout:
                 self.worker_save_path_root = self.experiment_dir + '/worker_out'
                 os.mkdir(self.worker_save_path_root)
             else:
                 self.worker_save_path_root = False
 
         else:
-            raise ValueError('directory ' + self.working_dir + ' doesn\'t exist.')
+            raise ValueError('directory ' + self.experiment_parent_dir + ' doesn\'t exist.')
 
         self.parameter_frame = pd.read_pickle(self.path_in_to_parameter_frame + '.pkl')
         self.bayesian_register_frame = pd.read_pickle(
@@ -148,12 +155,12 @@ class ParallelHyperparameterSearch:
         with open(self.path_in_to_data_types_ordered_list + '.pkl', 'rb') as f:
             self.data_types_ordered_list = pickle.load(f)
 
-        copy2(self.custom_module_root_dir + '/' + self.custom_module_name +
-              '.py', self.source_code + '/' + self.custom_module_name + '.py')
+        copy2(self.target_module_root_dir + '/' + self.target_module_name +
+              '.py', self.source_code + '/' + self.target_module_name + '.py')
 
-        sys.path.append(self.custom_module_root_dir)
-        self.custom_module = importlib.import_module(self.custom_module_name)
-        self.custom_function = getattr(self.custom_module, self.custom_function_name)
+        sys.path.append(self.target_module_root_dir)
+        self.target_module = importlib.import_module(self.target_module_name)
+        self.target_function = getattr(self.target_module, self.target_function_name)
 
         if self.monitor_root_dir:
             sys.path.append(self.monitor_root_dir)
@@ -203,7 +210,7 @@ class ParallelHyperparameterSearch:
 
     def model_preview_out(self, preview_function_name):
         self.preview_function_name = preview_function_name
-        self.loaded_preview_function = getattr(self.custom_module, self.preview_function_name)
+        self.loaded_preview_function = getattr(self.target_module, self.preview_function_name)
 
         parameter_string_list_preview = self.create_parameter_string_list()
         parameter_index_list_preview = self.parameter_frame.index.values.tolist()
@@ -258,21 +265,26 @@ class ParallelHyperparameterSearch:
             f.write(header_string)
 
     def start_execution(self):
-        utils.print_subsection(header='start execution')
-        print('\tobserve arrival of results with:\t\'watch -n 1 "(head -n 1; tail -n 10) < %s\"\'' %
-              (self.result_file_path))
+        start_exe = pd.datetime.now()
         if self.save_parameter_definitions:
             self.save_parameter_definitions_func()
         self.initialize_result_file()
+        self.additional_submit_kwargs = {}
 
-        # input('\tPress Enter to start execution...')
+        phs.utils.print_subsection('Compute Environment')
 
-        if self.parallelization == 'processes':
+        if self.parallelization == 'local_processes':
             from concurrent.futures import ProcessPoolExecutor as PoolExecutor
             from concurrent.futures import wait, as_completed
-            with PoolExecutor(max_workers=4) as executor:
+            with PoolExecutor(max_workers=self.local_processes_num_workers) as executor:
+                self.pp.pprint(executor.__dict__)
                 self.start_execution_kernel(executor, wait, as_completed)
+                print('scheduling:')
+                print(pd.datetime.now() - start_exe)
+                start_gather = pd.datetime.now()
                 self.as_completed_functions(as_completed)
+                print('gather:')
+                print(pd.datetime.now() - start_gather)
 
         elif self.parallelization == 'mpi':
             from mpi4py.futures import MPIPoolExecutor as PoolExecutor
@@ -282,25 +294,38 @@ class ParallelHyperparameterSearch:
                 self.as_completed_functions(as_completed)
 
         elif self.parallelization == 'dask':
+            self.additional_submit_kwargs = {'fifo_timeout': '0ms'}
             from dask.distributed import Client, progress, as_completed, scheduler, wait
             DASK_MASTER_IP = os.environ['DASK_MASTER_IP']
             DASK_MASTER_PORT = os.environ['DASK_MASTER_PORT']
-            with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='50s') as client:
-                # client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/utils.py')
-                # client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/bayes.py')
-                # client.upload_file(self.repository_root_dir + '/parallel_hyperparameter_search/phs/proxy.py')
-                # client.upload_file(self.custom_module_root_dir + '/' +
-                # self.custom_module_name + '.py')
+            with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='10s') as client:
+                client.restart()
+                self.pp.pprint(client.scheduler_info())
+                client.upload_file(os.path.abspath(phs.bayes.__file__)) # probably not necessary
+                client.upload_file(os.path.abspath(phs.proxy.__file__)) # probably not necessary
+                client.upload_file(os.path.abspath(phs.utils.__file__)) # probably not necessary
+                client.upload_file(self.target_module_root_dir + '/' + self.target_module_name + '.py')
                 self.start_execution_kernel(client, wait, as_completed)
                 self.as_completed_functions(as_completed)
         return 1
 
     def start_execution_kernel(self, executor, wait, as_completed):
+        phs.utils.print_subsection(header='start execution')
+        print('\t\'watch -n 1 "(head -n 1; tail -n 10) < %s\"\'' %
+              (self.result_file_path))
         parameter_index_list = self.parameter_frame.index.values.tolist()
         paths = {'lock_result_path': self.lock_result_path,
                  'result_file_path': self.result_file_path}
 
-        list_of_parameter_dicts = self.parameter_frame.to_dict(orient='records')
+        # list_of_parameter_dicts = self.parameter_frame.to_dict(orient='records')  # dtypes are not preserved
+        #print(self.parameter_frame)
+        #print(self.data_types_ordered_list)
+        #list_of_parameter_dicts = []
+        #for row in self.parameter_frame.itertuples(name=None, index=False):
+         #   print(row)
+          #  list_of_parameter_dicts.append(4)
+        #list_of_parameter_dicts = [{col:getattr(row, col) for col in self.parameter_frame} for row in self.parameter_frame.itertuples()]
+        #print(list_of_parameter_dicts)
         list_of_bayesian_register_dicts = self.bayesian_register_frame.to_dict(
             orient='records')
         list_of_bayesian_options_bounds_low_dicts = self.bayesian_options_bounds_low_frame.to_dict(
@@ -310,27 +335,31 @@ class ParallelHyperparameterSearch:
         list_of_bayesian_options_round_digits_dicts = self.bayesian_options_round_digits_frame.to_dict(
             orient='records')
         for i in parameter_index_list:
-            parameter_dict_i = list_of_parameter_dicts[i]
+            parameter_dict = {}
+            for col in self.parameter_frame.columns.values:
+                parameter_dict[col] = self.parameter_frame.at[i,col]
             bayesian_register_dict_i = list_of_bayesian_register_dicts[i]
-            auxiliary_information = {'worker_save_path_root': self.worker_save_path_root}
+            auxiliary_information = {'worker_save_path_root': self.worker_save_path_root,
+                                     'redirect_stdout': self.redirect_stdout}
             if not any(bayesian_register_dict_i.values()):
-                self.sub_future.append(executor.submit(proxy.proxy_function,
+                self.sub_future.append(executor.submit(phs.proxy.proxy_function,
                                                        self.parallelization,
-                                                       self.custom_function,
-                                                       arg=parameter_dict_i,
+                                                       self.target_function,
+                                                       arg=parameter_dict,
                                                        index=i,
                                                        data_types_ordered_list=self.data_types_ordered_list,
                                                        expression_data_type_flag=self.expression_data_type_flag,
-                                                       auxiliary_information=auxiliary_information))
+                                                       auxiliary_information=auxiliary_information,
+                                                       **self.additional_submit_kwargs))
             else:
                 bayesian_register_dict_i = list_of_bayesian_register_dicts[i]
                 bayesian_options_bounds_low_dict_i = list_of_bayesian_options_bounds_low_dicts[i]
                 bayesian_options_bounds_high_dict_i = list_of_bayesian_options_bounds_high_dicts[i]
                 bayesian_options_round_digits_dict_i = list_of_bayesian_options_round_digits_dicts[i]
-                self.sub_future.append(executor.submit(proxy.proxy_function,
+                self.sub_future.append(executor.submit(phs.proxy.proxy_function,
                                                        self.parallelization,
-                                                       self.custom_function,
-                                                       arg=parameter_dict_i,
+                                                       self.target_function,
+                                                       arg=parameter_dict,
                                                        index=i,
                                                        data_types_ordered_list=self.data_types_ordered_list,
                                                        expression_data_type_flag=self.expression_data_type_flag,
@@ -342,50 +371,20 @@ class ParallelHyperparameterSearch:
                                                        bayesian_register_dict=bayesian_register_dict_i,
                                                        bayesian_options_bounds_low_dict=bayesian_options_bounds_low_dict_i,
                                                        bayesian_options_bounds_high_dict=bayesian_options_bounds_high_dict_i,
-                                                       bayesian_options_round_digits_dict=bayesian_options_round_digits_dict_i))
-        return 1
-
-    def start_mpi_execution_kernel(self, executor, wait, as_completed):
-        parameter_string_list = self.create_parameter_string_list()
-        parameter_index_list = self.parameter_frame.index.values.tolist()
-        paths = {'lock_result_path': self.lock_result_path, 'result_file_path': self.result_file_path, 'path_to_bayesian_options_bounds_low_frame': self.path_to_bayesian_options_bounds_low_frame,
-                 'path_to_bayesian_options_bounds_high_frame': self.path_to_bayesian_options_bounds_high_frame, 'path_to_bayesian_options_round_digits_frame': self.path_to_bayesian_options_round_digits_frame}
-
-        list_of_parameter_dicts = self.parameter_frame.astype(object).to_dict(orient='records')
-        for i in parameter_index_list:
-            parameter_dict_i = list_of_parameter_dicts[i]
-            auxiliary_information = {'save_path': self.worker_save_path_root, 'parameter_index': i}
-            if self.bayesian_placeholder_phrase not in parameter_dict_i.values():
-                self.sub_future.append(executor.submit(proxy.proxy_function, self.parallelization,
-                                                       self.custom_function, arg=parameter_dict_i, index=i, auxiliary_information=auxiliary_information))
-            else:
-                self.sub_future.append(executor.submit(proxy.proxy_function, self.parallelization, self.custom_function, arg=parameter_dict_i, index=i, auxiliary_information=auxiliary_information,
-                                                       with_bayesian=True, bayesian_placeholder_phrase=self.bayesian_placeholder_phrase, paths=paths, data_types_ordered=self.data_types_ordered))
-        return 1
-
-    def start_dask_execution_kernel(self, executor, wait, as_completed):
-        parameter_string_list = self.create_parameter_string_list()
-        parameter_index_list = self.parameter_frame.index.values.tolist()
-        paths = {'lock_result_path': self.lock_result_path, 'result_file_path': self.result_file_path, 'path_to_bayesian_options_bounds_low_frame': self.path_to_bayesian_options_bounds_low_frame,
-                 'path_to_bayesian_options_bounds_high_frame': self.path_to_bayesian_options_bounds_high_frame, 'path_to_bayesian_options_round_digits_frame': self.path_to_bayesian_options_round_digits_frame}
-
-        list_of_parameter_dicts = self.parameter_frame.astype(object).to_dict(orient='records')
-        for i in parameter_index_list:
-            parameter_dict_i = list_of_parameter_dicts[i]
-            auxiliary_information = {'save_path': self.worker_save_path_root, 'parameter_index': i}
-            if self.bayesian_placeholder_phrase not in parameter_dict_i.values():
-                self.sub_future.append(executor.submit(proxy.proxy_function, self.parallelization, self.custom_function,
-                                                       arg=parameter_dict_i, index=i, auxiliary_information=auxiliary_information, priority=10, fifo_timeout='0ms'))
-            else:
-                self.sub_future.append(executor.submit(proxy.proxy_function, self.parallelization, self.custom_function, arg=parameter_dict_i, index=i, auxiliary_information=auxiliary_information,
-                                                       with_bayesian=True, bayesian_placeholder_phrase=self.bayesian_placeholder_phrase, paths=paths, data_types_ordered=self.data_types_ordered, priority=-10, fifo_timeout='0ms'))
+                                                       bayesian_options_round_digits_dict=bayesian_options_round_digits_dict_i,
+                                                       **self.additional_submit_kwargs))
         return 1
 
     def as_completed_functions(self, as_completed):
         print('', end='\n')
+        sub_future_len = len(self.sub_future)
+        progress_bar_len = 40
         for count_finished, f in enumerate(as_completed(self.sub_future), 1):
-            print('===>\tfinished tasks:\t{0:>6} of {1:>6}' .format(
-                count_finished, len(self.sub_future)), end='\r')
+            finished_portion = count_finished/sub_future_len
+            progress_bar_signs = int(round(progress_bar_len * finished_portion))
+            print('[{0}] | {1:>3}% | {2:>6} of {3:>6}' .format(
+                '='*progress_bar_signs + ' '*(progress_bar_len-progress_bar_signs),
+                int(round(finished_portion*100)), count_finished, len(self.sub_future)), end='\r')
             self.append_result(f)
             self.append_additional_information(f)
             self.monitor_functions()
@@ -442,8 +441,14 @@ class ParallelHyperparameterSearch:
             current_additional_information_df, ignore_index=False, verify_integrity=False)
 
         if not self.append_additional_information_init:
+
+            header_list = list(current_additional_information_df.columns.values)
+            header_string = 'index'
+            for i in header_list:
+                header_string = header_string + ',' + str(i)
+            header_string += '\n'
             with open(self.additional_information_file_path, 'w') as f:
-                current_additional_information_df.to_csv(f, header=True, index=True)
+                f.write(header_string)
 
             self.data_types_additional_information_dict = {}
             for key, value in current_additional_information_dict.items():
@@ -454,9 +459,9 @@ class ParallelHyperparameterSearch:
                 f.write(str(self.data_types_additional_information_dict))
 
             self.append_additional_information_init = True
-        else:
-            with open(self.additional_information_file_path, 'a') as f:
-                current_additional_information_df.to_csv(f, header=False, index=True)
+
+        with open(self.additional_information_file_path, 'a') as f:
+            current_additional_information_df.to_csv(f, header=False, index=True)
 
         return 1
 

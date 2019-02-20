@@ -45,6 +45,12 @@ class PostProcessing:
         # print(type(self.additional_information_frame['started'].values.tolist()))
         # print(type(self.additional_information_frame['ended'].values.tolist()))
 
+    def result_evolution(self, name):
+        monitor_functions.result_evolution(name=name,
+                                           path_out=self.post_processing_path_out,
+                                           result_frame=self.result_frame,
+                                           path_to_bayesian_register_frame=self.path_to_bayesian_register_frame)
+
     def plot_3d(self,
                 name,
                 first,
@@ -52,7 +58,8 @@ class PostProcessing:
                 third,
                 contour=False,
                 animated=False,
-                animated_step_size=1):
+                animated_step_size=1,
+                animated_fps=2):
         if not animated:
             monitor_functions.plot_3d(name=name,
                                       path_out=self.post_processing_path_out,
@@ -93,7 +100,7 @@ class PostProcessing:
                 image_plain_list.append(image_dict_return['plain'])
                 # just use '... .mp4' for mp4 export
                 writer = imageio.get_writer(
-                    self.post_processing_path_out + '/' + name + '.gif', fps=1, mode='I', subrectangles=True)
+                    self.post_processing_path_out + '/' + name + '.gif', fps=animated_fps, mode='I', subrectangles=True)
                 for frame in image_plain_list:
                     writer.append_data(frame)
                 writer.close()
@@ -102,7 +109,7 @@ class PostProcessing:
                     image_contour_list.append(image_dict_return['contour'])
                     # just use '... .mp4' for mp4 export
                     writer = imageio.get_writer(
-                        self.post_processing_path_out + '/' + name + '_contour' + '.gif', fps=1, mode='I', subrectangles=True)
+                        self.post_processing_path_out + '/' + name + '_contour' + '.gif', fps=animated_fps, mode='I', subrectangles=True)
                     for frame in image_contour_list:
                         writer.append_data(frame)
                     writer.close()

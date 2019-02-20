@@ -81,14 +81,14 @@ def compute_bayesian_suggestion(at_index,
     model.fit(xp, yp)
     next_sample = sample_next_hyperparameter(
         expected_improvement, model, yp, greater_is_better=False, bounds=bounds, n_restarts=100)
-    if np.any(np.abs(next_sample - xp) <= epsilon):
-        next_sample = np.random.uniform(bounds[:, 0], bounds[:, 1], bounds.shape[0])
+    #if np.any(np.abs(next_sample - xp) <= epsilon):
+     #   next_sample = np.random.uniform(bounds[:, 0], bounds[:, 1], bounds.shape[0])
+    #print(next_sample)
     bayesian_replacement_dict = {}
     for i, col in enumerate(bayesian_col_name_list):
         if not ma.isnan(bayesian_options_round_digits_dict[col]):
             next_sample[i] = round(next_sample[i], int(bayesian_options_round_digits_dict[col]))
-        bayesian_replacement_dict[col] = next_sample[i].astype(
-            data_types_unordered_dict[col]).item()
+        bayesian_replacement_dict[col] = next_sample[i]
     return bayesian_replacement_dict
 
 

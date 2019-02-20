@@ -12,6 +12,47 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import ConnectionPatch
 
 
+def result_evolution(name,
+                     path_out,
+                     result_frame,
+                     path_to_bayesian_register_frame,
+                     **not_used_kwargs):
+
+    start_time = time.time()
+    save_dir = path_out + '/' + name
+
+    current_result_frame = result_frame
+    bayesian_register_frame = pd.read_pickle(path_to_bayesian_register_frame + '.pkl')
+
+    x = current_result_frame.index.values
+    y = current_result_frame['result'].values
+
+    plt.switch_backend('agg')
+    plt.ioff()
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(1, 1, 1)
+
+    for i in current_result_frame.index.values:
+        x = i
+        y = current_result_frame.at[i, 'result']
+        if any(bayesian_register_frame.loc[i]):
+            marker = '+'
+            color = 'r'
+        else:
+            marker = 'o'
+            color = 'b'
+        ax.scatter(x, y, color=color, marker=marker)
+    ax.set_xlabel('parameter set')
+    ax.set_ylabel('result')
+    plt.xlim(left=0)
+    plt.grid(True)
+    fig.savefig(save_dir + '.png', bbox_inches='tight')
+    fig.savefig(save_dir + '.pdf', bbox_inches='tight')
+    plt.close()
+
+    return 1
+
+
 def plot_3d(name,
             path_out,
             first,
@@ -128,7 +169,7 @@ def plot_3d(name,
                 frame_array_dict_return['contour'] = buf_contour
 
         plt.close(fig_2d)
-        print('plot_3d:\t%.3f' % (time.time()-start_time), end='\n')
+        # print('plot_3d:\t%.3f' % (time.time()-start_time), end='\n')
 
     if not animated:
         return 1
@@ -165,16 +206,20 @@ def create_worker_timeline(name,
     fig = plt.figure(figsize=(10, 2))
     ax = fig.add_subplot(1, 1, 1)
 
+    index = additional_information_frame.index.values
     worker = additional_information_frame['worker'].values
     started = pd.to_datetime(additional_information_frame['started'].values)
     ended = pd.to_datetime(additional_information_frame['ended'].values)
     ax.hlines(y=worker, xmin=started, xmax=ended, color='b')
+    index_string_list = [",".join(item) for item in index.astype(str)]
+    for i in index:
+        ax.text(started[i], worker[i], str(i), verticalalignment='bottom')
     ax.scatter(started, worker, marker='^', c='g')
     ax.scatter(ended, worker, marker='v', c='r')
     ax.set_xlabel('time')
     # ax.set_ylabel('')
     fig.savefig(save_dir + '.png', bbox_inches='tight')
-    # fig.savefig(save_dir + '.pdf', bbox_inches='tight')
+    fig.savefig(save_dir + '.pdf', bbox_inches='tight')
     plt.close()
     # print('create_worker_timeline:\t%.3f' % (time.time()-start_time), end='\n')
     return 1
@@ -246,7 +291,7 @@ def create_parameter_combination(name,
                                   axesA=ax[j+1], axesB=ax[j], color=rgba_color[i])
             ax[j+1].add_artist(con)
     fig.savefig(save_dir + '.png', bbox_inches='tight')
-    # fig.savefig(save_dir + '.pdf', bbox_inches='tight')
+    fig.savefig(save_dir + '.pdf', bbox_inches='tight')
     plt.close()
     # print('create_parameter_combination:\t%.3f' % (time.time()-start_time), end='\n')
     return 1

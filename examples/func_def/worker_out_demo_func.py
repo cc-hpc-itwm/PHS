@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 def worker_out_demo_func(parameter):
     exec(parameter['hyperpar'], globals(), globals())
+    print('\'x\' is {0}, \'y\' is {1} and \'size\' is {2}' .format(x, y, size))
     plt.switch_backend('agg')
     plt.ioff()
     fig = plt.figure(figsize=(10, 2))

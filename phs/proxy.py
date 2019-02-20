@@ -3,11 +3,11 @@ import os
 import json as js
 import numpy as np
 import pandas as pd
-
+from dask.distributed import get_worker
 import sys
-import inspect
 
-from . import bayes
+import phs.bayes
+import phs.utils
 
 
 def proxy_function(parallelization,
@@ -27,9 +27,9 @@ def proxy_function(parallelization,
                    bayesian_options_round_digits_dict={}):
     start_time = pd.datetime.now()
     np.random.seed(1)
-    t = float(np.random.rand(1))
-    time.sleep(t/100 + 0.01)
-    if auxiliary_information['worker_save_path_root'] is not False:
+    # t = float(np.random.rand(1))
+    time.sleep(0.01)
+    if auxiliary_information['worker_save_path_root'] is not False or auxiliary_information['redirect_stdout']:
         zero_fill = 6
         worker_save_path = auxiliary_information['worker_save_path_root'] + \
             '/' + str(index).zfill(zero_fill) + '/'
@@ -43,7 +43,7 @@ def proxy_function(parallelization,
 
     bayesian_replacement_dict = None
     if with_bayesian:
-        bayesian_replacement_dict = bayes.compute_bayesian_suggestion(index,
+        bayesian_replacement_dict = phs.bayes.compute_bayesian_suggestion(index,
                                                                       paths,
                                                                       data_types_unordered_dict,
                                                                       result_col_name,
@@ -54,6 +54,10 @@ def proxy_function(parallelization,
                                                                       bayesian_options_round_digits_dict)
         for col in bayesian_replacement_dict:
             arg[col] = bayesian_replacement_dict[col]
+
+    for key in arg:
+        if isinstance(arg[key], np.integer):  # json can not serialize numpy.integer
+            arg[key] = int(arg[key])
     string = js.dumps(arg, separators=['\n', '='])
     string = string[1:-1]  # strips {}
     for key in arg:
@@ -63,15 +67,18 @@ def proxy_function(parallelization,
             string = string.replace("\"" + key + "\"" + "=\"" +
                                     arg[key] + "\"", key + "=" + arg[key])
     parameter = {'hyperpar': string, 'worker_save_path': worker_save_path}
-    result = fun(parameter)
+    if auxiliary_information['redirect_stdout']:
+        with phs.utils.RedirectStdoutStream(worker_save_path + 'stdout.txt'):
+            result = fun(parameter)
+    else:
+        result = fun(parameter)
     end_time = pd.datetime.now()
     worker = None
-    if parallelization == 'processes':
+    if parallelization == 'local_processes':
         worker = os.getpid()
-        return (index, result, start_time, end_time, worker, bayesian_replacement_dict)
     elif parallelization == 'mpi':
         worker = os.uname()[1]
-        return (index, result, start_time, end_time, worker, bayesian_replacement_dict)
     elif parallelization == 'dask':
-        worker = os.uname()[1]
-        return (index, result, start_time, end_time, worker, bayesian_replacement_dict)
+        worker = get_worker().name  # The worker on which this task is running
+
+    return (index, result, start_time, end_time, worker, bayesian_replacement_dict)
