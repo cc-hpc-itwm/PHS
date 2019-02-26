@@ -42,7 +42,17 @@ class ParameterDefinition:
                 parameter_data_types_and_order.append((par, datatype_for_all))
             self.data_types_ordered_list = parameter_data_types_and_order
 
-    def add_individual_parameter_set(self, number_of_sets=1, set={}, prevent_duplicate=True):
+    def add_individual_parameter_set(self, number_of_sets, set, prevent_duplicate=True):
+        """adds one or multiple parameter sets to your parameter definition
+
+        longer text
+        over more lines
+
+        # Arguments
+            set (dict): hello
+            d: f
+
+        """
         for set_i in range(number_of_sets):
             bayesian_in_set = False
             for par in set:
@@ -169,9 +179,10 @@ class ParameterDefinition:
             self.bayesian_options_bounds_high_dict_list, columns=parameter_names_ordered_list)
         self.bayesian_options_round_digits_frame = pd.DataFrame(
             self.bayesian_options_round_digits_dict_list, columns=parameter_names_ordered_list)
+
         for tuple_i in self.data_types_ordered_list:
-            par = tuple_i[0]
             if tuple_i[1] != self.expression_data_type_flag:
+                par = tuple_i[0]
                 self.parameter_frame[par] = self.parameter_frame[par].astype(tuple_i[1])
             else:
                 self.parameter_frame[par] = self.parameter_frame[par].astype(str)
