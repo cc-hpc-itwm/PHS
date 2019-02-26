@@ -12,7 +12,7 @@ def test_rosenbrock(parameter):
     # x2 [-5,10]
     # min 0 at (1,1)
     exec(parameter['hyperpar'], globals(), globals())
-    z = (1-x1)**2 + 100 * ((x2-x1**2))**2
+    z = (1-x1)**2 + 100 * ((x2-x1**2))**2 + 100
     return z
 
 

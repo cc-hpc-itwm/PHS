@@ -279,12 +279,12 @@ class ParallelHyperparameterSearch:
             with PoolExecutor(max_workers=self.local_processes_num_workers) as executor:
                 self.pp.pprint(executor.__dict__)
                 self.start_execution_kernel(executor, wait, as_completed)
-                print('scheduling:')
-                print(pd.datetime.now() - start_exe)
-                start_gather = pd.datetime.now()
+                # print('scheduling:')
+                # print(pd.datetime.now() - start_exe)
+                # start_gather = pd.datetime.now()
                 self.as_completed_functions(as_completed)
-                print('gather:')
-                print(pd.datetime.now() - start_gather)
+                # print('gather:')
+                # print(pd.datetime.now() - start_gather)
 
         elif self.parallelization == 'mpi':
             from mpi4py.futures import MPIPoolExecutor as PoolExecutor
