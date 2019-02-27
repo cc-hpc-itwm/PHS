@@ -1,5 +1,6 @@
 import sys
 
+
 def set_default_value_to_optional_key(key, value, dict):
     if key not in dict:
         dict[key] = value
@@ -22,19 +23,20 @@ class RedirectStdoutStream:
     def __init__(self, stdout_file):
         self.stdout_file = stdout_file
 
-
     def __enter__(self):
         self.stdout_handle = open(self.stdout_file, 'w')
         self.original_stdout = sys.stdout
         self.original_stdout.flush()
         sys.stdout = self.stdout_handle
-        
+
     def __exit__(self, *args):
         self.stdout_handle.flush()
         sys.stdout = self.original_stdout
         self.stdout_handle.close()
 
 # not working
+
+
 class RedirectStderrStream:
     def __init__(self, stderr_file):
         self.stderr_file = stderr_file

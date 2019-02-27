@@ -33,7 +33,7 @@ hs = phs.parallel_hyperparameter_search.ParallelHyperparameterSearch(
 hs.start_execution()
 
 post_pro = phs.post_processing.PostProcessing(
-    experiment_dir='/home/HabelitzP/phs_ex/experiments/post_pro_demo')
+    experiment_dir='/absolute/path/to/an/experiment')
 
 post_pro.plot_3d(name='plot_xyr_post',
                  first='x',

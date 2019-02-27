@@ -79,7 +79,6 @@ hs = phs.parallel_hyperparameter_search.ParallelHyperparameterSearch(
        'redirect_stdout': True})
 
 hs.start_execution()
-
 ```
 
 ### ```save_parameter_definitions```
@@ -90,3 +89,6 @@ This option affects all function evaluations which have at least one parameter p
 
 ### ```local_processes_num_workers```
 If ```parallelization``` is ```'local_processes'``` the maximum number of workers can be set with ```local_processes_num_workers```.
+
+## Starting the experiment
+To start the experiment just call the member method ```start_execution()```. To 

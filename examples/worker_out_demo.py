@@ -26,7 +26,7 @@ hs = phs.parallel_hyperparameter_search.ParallelHyperparameterSearch(
        'target_module_name': 'file_name_with_test_function_definition_(without_extension)',
        'target_function_name': 'worker_out_demo_func',
        'parameter_definitions_root_dir_in': 'absolute/path/to/parent/folder/for/import',
-       'parallelization': 'local_processes'
+       'parallelization': 'local_processes',
        'provide_worker_path': True,
        'redirect_stdout': True})
 

@@ -4,7 +4,6 @@ import json as js
 import numpy as np
 import pandas as pd
 from dask.distributed import get_worker
-import sys
 
 import phs.bayes
 import phs.utils
@@ -44,14 +43,14 @@ def proxy_function(parallelization,
     bayesian_replacement_dict = None
     if with_bayesian:
         bayesian_replacement_dict = phs.bayes.compute_bayesian_suggestion(index,
-                                                                      paths,
-                                                                      data_types_unordered_dict,
-                                                                      result_col_name,
-                                                                      bayesian_wait_for_all,
-                                                                      bayesian_register_dict,
-                                                                      bayesian_options_bounds_low_dict,
-                                                                      bayesian_options_bounds_high_dict,
-                                                                      bayesian_options_round_digits_dict)
+                                                                          paths,
+                                                                          data_types_unordered_dict,
+                                                                          result_col_name,
+                                                                          bayesian_wait_for_all,
+                                                                          bayesian_register_dict,
+                                                                          bayesian_options_bounds_low_dict,
+                                                                          bayesian_options_bounds_high_dict,
+                                                                          bayesian_options_round_digits_dict)
         for col in bayesian_replacement_dict:
             arg[col] = bayesian_replacement_dict[col]
 
