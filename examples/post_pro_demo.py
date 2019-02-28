@@ -24,7 +24,7 @@ hs = phs.parallel_hyperparameter_search.ParallelHyperparameterSearch(
        'experiment_name': 'post_pro_demo',
        'target_module_root_dir': '/absolute/path/to/root/dir/in/which/your/test_function/resides',
        'target_module_name': 'file_name_with_test_function_definition_(without_extension)',
-       'target_function_name': 'name_of_function_inside_target_module',
+       'target_function_name': 'test_griewank',
        'parameter_definitions_root_dir_in': 'absolute/path/to/parent/folder/for/import',
        'parallelization': 'local_processes',
        'local_processes_num_workers': 3,

@@ -2,6 +2,9 @@
 
 *phs is an ergonomic framework for performing hyperparameter searches on numerous cumpute instances of any arbitrary python function. This is achieved with minimal modifications inside your custom function. Possible applications appear in expensive to evaluate numerical computations which strongly depend on hyperparameters such as machine learning.*
 
+<img src="./docs/start_page_images/plot_xyr_post_contour.gif" align="left" width=200/>
+<img src="./docs/start_page_images/parameter_combination_post.png" align="center" width=322/>
+
 ## Functionality
 + capable of all kinds of parameter types such as continuous or discrete numerical values, categorical values and even arbitrary python statements
 + no binding to a particular python framework like TensorFlow or PyTorch
@@ -11,16 +14,16 @@
 + handy monitor and visualization functions for supervising the progress are already built-in
 
 
-
 ## Table of Contents
 1. [Installation](./docs/installation.md)
 2. [Quick Start](./docs/quick_start.md)
 3. [Parallelization Technique](./docs/parallelization_technique.md)
 4. [Preparation of the Target Function](./docs/preparation_of_the_target_function.md)
 5. [Search Strategies](./docs/search_strategies.md)
-6. [Data Types, Order and Transfer of parameters](./docs/data_types_order_transfer.md)
+6. [Data Types, Order and Transfer of Parameters](./docs/data_types_order_transfer.md)
 7. [Experiment Definition](./docs/experiment_definition.md)
-7. [Post Processing](./docs/post_processing.md)
+8. [Post Processing](./docs/post_processing.md)
+9. [Examples](./examples/README.md)
 
 
 

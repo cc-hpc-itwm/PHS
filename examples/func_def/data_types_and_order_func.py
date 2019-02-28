@@ -1,5 +1,6 @@
 import math
 
+
 def data_types_and_order_func(parameter):
     exec(parameter['hyperpar'], globals(), globals())
     print(parameter['hyperpar'])

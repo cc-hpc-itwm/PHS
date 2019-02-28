@@ -26,4 +26,3 @@ hs = phs.parallel_hyperparameter_search.ParallelHyperparameterSearch(
        'redirect_stdout': True})
 
 hs.start_execution()
-    

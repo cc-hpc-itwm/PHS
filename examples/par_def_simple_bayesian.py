@@ -1,8 +1,3 @@
-import phs.parallel_hyperparameter_search  # standalone import
-# Make sure that python can import 'phs'.
-# One way is to run the 'install.sh' script provided within this project.
-
-# import CarmeModules.HyperParameterSearch.phs.parallel_hyperparameter_search as phs  # import on Carme
 import phs.parameter_definition  # standalone import
 
 pardef = phs.parameter_definition.ParameterDefinition()
