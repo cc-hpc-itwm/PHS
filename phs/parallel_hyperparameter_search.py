@@ -16,6 +16,8 @@ import phs.utils
 
 
 class ParallelHyperparameterSearch:
+    """ """
+
     def __init__(self, **kwargs_dict):
         phs.utils.print_section(header='ParallelHyperparameterSearch')
         if 'config_json_path' in kwargs_dict:
@@ -172,24 +174,30 @@ class ParallelHyperparameterSearch:
             self.monitor_functions_dict[func_name] = getattr(self.monitor_module, func_name)
 
     def show_parameter_set_dtypes(self):
+        """ """
         print(self.parameter_frame.dtypes)
 
     def show_parameter_set(self):
+        """ """
         print(self.parameter_frame)
 
     def show_bayesian_options_bounds_low_frame(self):
+        """ """
         print('bayesian_options_bounds_low_frame')
         print(self.bayesian_options_bounds_low_frame)
 
     def show_bayesian_options_bounds_high_frame(self):
+        """ """
         print('bayesian_options_bounds_high_frame')
         print(self.bayesian_options_bounds_high_frame)
 
     def show_bayesian_options_round_digits_frame(self):
+        """ """
         print('bayesian_options_round_digits_frame')
         print(self.bayesian_options_round_digits_frame)
 
     def create_parameter_string_list(self):
+        """ """
         self.parameter_string_list = []
         list_of_dicts = self.parameter_frame.to_dict(orient='records')
         for dict_i in list_of_dicts:
@@ -202,6 +210,17 @@ class ParallelHyperparameterSearch:
         return self.parameter_string_list
 
     def show_model_preview(self, preview_function_name):
+        """
+
+        Parameters
+        ----------
+        preview_function_name :
+
+
+        Returns
+        -------
+
+        """
         os.mkdir(self.model_preview_path)
         with open(self.model_preview_path + '/model_preview.txt', 'w') as f:
             with redirect_stdout(f):
@@ -209,6 +228,17 @@ class ParallelHyperparameterSearch:
         self.model_preview_out(preview_function_name)
 
     def model_preview_out(self, preview_function_name):
+        """
+
+        Parameters
+        ----------
+        preview_function_name :
+
+
+        Returns
+        -------
+
+        """
         self.preview_function_name = preview_function_name
         self.loaded_preview_function = getattr(self.target_module, self.preview_function_name)
 
@@ -227,6 +257,7 @@ class ParallelHyperparameterSearch:
             self.loaded_preview_function(string)
 
     def save_parameter_definitions_func(self):
+        """ """
         if True:
             self.parameter_frame.to_pickle(self.path_out_to_parameter_frame + '.pkl')
             with open(self.path_out_to_parameter_frame + '.txt', 'w') as f:
@@ -256,6 +287,7 @@ class ParallelHyperparameterSearch:
                 f.write(str(self.data_types_ordered_list))
 
     def initialize_result_file(self):
+        """ """
         header_list = list(self.parameter_frame.columns.values)
         header_string = 'index'
         for i in header_list:
@@ -265,6 +297,7 @@ class ParallelHyperparameterSearch:
             f.write(header_string)
 
     def start_execution(self):
+        """ """
         if self.save_parameter_definitions:
             self.save_parameter_definitions_func()
         self.initialize_result_file()
@@ -306,6 +339,21 @@ class ParallelHyperparameterSearch:
         return 1
 
     def start_execution_kernel(self, executor, wait, as_completed):
+        """
+
+        Parameters
+        ----------
+        executor :
+
+        wait :
+
+        as_completed :
+
+
+        Returns
+        -------
+
+        """
         phs.utils.print_subsection(header='start execution')
         print('\t\'watch -n 1 "(head -n 1; tail -n 10) < %s\"\'' %
               (self.result_file_path))
@@ -339,15 +387,16 @@ class ParallelHyperparameterSearch:
             auxiliary_information = {'worker_save_path_root': self.worker_save_path_root,
                                      'redirect_stdout': self.redirect_stdout}
             if not any(bayesian_register_dict_i.values()):
-                self.sub_future.append(executor.submit(phs.proxy.proxy_function,
-                                                       self.parallelization,
-                                                       self.target_function,
-                                                       arg=parameter_dict,
-                                                       index=i,
-                                                       data_types_ordered_list=self.data_types_ordered_list,
-                                                       expression_data_type_flag=self.expression_data_type_flag,
-                                                       auxiliary_information=auxiliary_information,
-                                                       **self.additional_submit_kwargs))
+                self.sub_future.append(
+                    executor.submit(phs.proxy.proxy_function,
+                                    self.parallelization,
+                                    self.target_function,
+                                    arg=parameter_dict,
+                                    index=i,
+                                    data_types_ordered_list=self.data_types_ordered_list,
+                                    expression_data_type_flag=self.expression_data_type_flag,
+                                    auxiliary_information=auxiliary_information,
+                                    **self.additional_submit_kwargs))
             else:
                 bayesian_register_dict_i = list_of_bayesian_register_dicts[i]
                 bayesian_options_bounds_low_dict_i = list_of_bayesian_options_bounds_low_dicts[i]
@@ -374,6 +423,17 @@ class ParallelHyperparameterSearch:
         return 1
 
     def as_completed_functions(self, as_completed):
+        """
+
+        Parameters
+        ----------
+        as_completed :
+
+
+        Returns
+        -------
+
+        """
         print('', end='\n')
         sub_future_len = len(self.sub_future)
         progress_bar_len = 40
@@ -390,7 +450,17 @@ class ParallelHyperparameterSearch:
         return 1
 
     def append_result(self, future):
+        """
 
+        Parameters
+        ----------
+        future :
+
+
+        Returns
+        -------
+
+        """
         index = (future.result())[0]
         current_result_dict = self.parameter_frame.iloc[[index]].to_dict(orient='list')
         if (future.result())[5] is not None:
@@ -423,6 +493,17 @@ class ParallelHyperparameterSearch:
         return 1
 
     def append_additional_information(self, future):
+        """
+
+        Parameters
+        ----------
+        future :
+
+
+        Returns
+        -------
+
+        """
         index = (future.result())[0]
         current_additional_information_dict = {}
         current_additional_information_dict['started'] = (future.result())[2]
@@ -462,6 +543,7 @@ class ParallelHyperparameterSearch:
         return 1
 
     def monitor_functions(self):
+        """ """
         for monitor_function_string in self.monitor_func_name_with_args:
             kwargs_dict = self.monitor_func_name_with_args[monitor_function_string]
             kwargs_dict['path_out'] = self.monitor_path

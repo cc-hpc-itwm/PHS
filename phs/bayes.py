@@ -18,6 +18,29 @@ def compute_bayesian_suggestion(at_index,
                                 bayesian_options_bounds_low_dict,
                                 bayesian_options_bounds_high_dict,
                                 bayesian_options_round_digits_dict):
+    """
+    Wrapper function executed on a certain worker to organize the bayesian optimization. This includes reading the
+    latest .csv file with all previous results in a thread save way, preparing the data, calling the bayesian
+    optimization algorithm and returning the suggested parameter values.
+
+    Parameters
+    ----------
+    - **at_index** (int): index of the parameter set at which bayesian optimization should be performed
+    - **paths** (dict): path information
+    - **data_types_unordered_dict** (dict): data type information of the parameters
+    - **result_col_name** (str): column name of the result frame holding the return value of the target function
+    - **bayesian_wait_for_all** (bool): sleep until all parameter sets with lower index are completed
+    - **bayesian_register_dict** (dict): information to decide which parameters in the current parameter set should be
+    suggested by bayesian optimization
+    - **bayesian_options_bounds_low_dict** (dict): lower bound for bayesian optimization for all involved parameters
+    - **bayesian_options_bounds_high_dict** (dict): upper bound for bayesian optimization for all involved parameters
+    - **bayesian_options_round_digits_dict** (dict): rounding information for suggested values
+
+
+    Returns
+    -------
+    **dict**: parameter names with values suggested by bayesian optimization
+    """
 
     bayesian_col_name_list = []
     for key in bayesian_register_dict:
@@ -75,15 +98,15 @@ def compute_bayesian_suggestion(at_index,
 
     kernel = gp.kernels.Matern()
     alpha = 1e-5
-    epsilon = 1e-7
+    # epsilon = 1e-7
     model = gp.GaussianProcessRegressor(
         kernel=kernel, alpha=alpha, n_restarts_optimizer=10, normalize_y=True)
     model.fit(xp, yp)
     next_sample = sample_next_hyperparameter(
         expected_improvement, model, yp, greater_is_better=False, bounds=bounds, n_restarts=100)
-    #if np.any(np.abs(next_sample - xp) <= epsilon):
-     #   next_sample = np.random.uniform(bounds[:, 0], bounds[:, 1], bounds.shape[0])
-    #print(next_sample)
+    # if np.any(np.abs(next_sample - xp) <= epsilon):
+    #   next_sample = np.random.uniform(bounds[:, 0], bounds[:, 1], bounds.shape[0])
+    # print(next_sample)
     bayesian_replacement_dict = {}
     for i, col in enumerate(bayesian_col_name_list):
         if not ma.isnan(bayesian_options_round_digits_dict[col]):
@@ -92,14 +115,23 @@ def compute_bayesian_suggestion(at_index,
     return bayesian_replacement_dict
 
 
-def sample_next_hyperparameter(acquisition_func, gaussian_process, evaluated_loss, greater_is_better, bounds=(0, 10), n_restarts=25):
+def sample_next_hyperparameter(acquisition_func,
+                               gaussian_process,
+                               evaluated_loss,
+                               greater_is_better,
+                               bounds=(0, 10),
+                               n_restarts=25):
+
     best_x = None
     best_acquisition_value = None
     n_params = bounds.shape[0]
 
     for starting_point in np.random.uniform(bounds[:, 0], bounds[:, 1], size=(n_restarts, n_params)):
 
-        minimize_obj = minimize(fun=acquisition_func, x0=starting_point.reshape(1, -1), bounds=bounds, method='L-BFGS-B',
+        minimize_obj = minimize(fun=acquisition_func,
+                                x0=starting_point.reshape(1, -1),
+                                bounds=bounds,
+                                method='L-BFGS-B',
                                 args=(gaussian_process, evaluated_loss, greater_is_better, n_params))
 
         if best_acquisition_value is None:

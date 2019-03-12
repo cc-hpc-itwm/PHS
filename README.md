@@ -1,6 +1,6 @@
 # ParallelHyperparameterSearch
 
-*phs is an ergonomic framework for performing hyperparameter searches on numerous cumpute instances of any arbitrary python function. This is achieved with minimal modifications inside your custom function. Possible applications appear in expensive to evaluate numerical computations which strongly depend on hyperparameters such as machine learning.*
+*phs is an ergonomic framework for performing hyperparameter searches on numerous cumpute instances of any arbitrary python function. This is achieved with minimal modifications inside your target function. Possible applications appear in expensive to evaluate numerical computations which strongly depend on hyperparameters such as machine learning.*
 
 <img src="./docs/start_page_images/plot_xyr_post_contour.gif" align="left" width=200/>
 <img src="./docs/start_page_images/parameter_combination_post.png" align="center" width=322/>
