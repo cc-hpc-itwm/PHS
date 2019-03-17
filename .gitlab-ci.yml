@@ -13,4 +13,5 @@ lint job:
         before_script:
                 - pip install pylint
         script:
-                - pylint /phs/parameter_definition.py
+                - ls
+                - pwd
