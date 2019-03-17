@@ -1,0 +1,16 @@
+image: python:3.6
+
+before_script:
+        - apt-get update -q -y
+        - pip install -r requirements.txt
+
+stages:
+        - lint
+        - test
+
+lint job:
+        stage: lint
+        before_script:
+                - apt-get install pylint
+        script:
+                - pylint /phs/parameter_definition.py
