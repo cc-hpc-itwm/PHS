@@ -11,7 +11,7 @@ stages:
 lint job:
         stage: lint
         before_script:
-                - apt-get install -y sudo
+                - sudo apt-get install -y sudo
                 - sudo apt-get install pylint
         script:
                 - pylint /phs/parameter_definition.py
