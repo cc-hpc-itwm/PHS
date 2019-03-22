@@ -1,9 +1,7 @@
 image: python:3.6
 
 before_script:
-        - apt-get install -y sudo
-        - sudo apt-get update -qq
-        - pip install -r requirements.txt
+        - echo "hello from global before script"
 
 stages:
         - lint
@@ -12,6 +10,6 @@ stages:
 lint job:
         stage: lint
         before_script:
-                - sudo apt-get install pylint
+                - echo "hello from local (lint job) before script"
         script:
-                - pylint /phs/parameter_definition.py
+                - echo "hello from local (lint job) script"
