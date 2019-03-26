@@ -1,0 +1,4 @@
+x=-4.71
+f=math.cos(x)
+iterations=6
+s="string1"

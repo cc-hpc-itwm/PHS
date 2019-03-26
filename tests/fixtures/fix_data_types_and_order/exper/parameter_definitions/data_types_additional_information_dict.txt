@@ -1,0 +1,1 @@
+{'started': <class 'datetime.datetime'>, 'ended': <class 'datetime.datetime'>, 'execution time': <class 'datetime.timedelta'>, 'worker': <class 'int'>, 'state': <class 'str'>}

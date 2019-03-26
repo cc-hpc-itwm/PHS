@@ -1,8 +1,5 @@
 image: python:3.6
 
-before_script:
-        - echo "hello from global before script"
-
 stages:
         - lint
         - test
@@ -10,6 +7,13 @@ stages:
 lint job:
         stage: lint
         before_script:
-                - echo "hello from local (lint job) before script"
+                - pip install -q pylint
         script:
-                - echo "hello from local (lint job) script"
+                - pylint phs/
+                - pylint examples/
+                - pylint tests/
+
+integration test parameter definition:
+        stage: test
+        script:
+                - pytest --disable-pytest-warnings --cov=phs --cov-branch tests/

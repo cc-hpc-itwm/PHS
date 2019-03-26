@@ -1,4 +1,5 @@
 import sys
+from filecmp import dircmp
 
 
 def set_default_value_to_optional_key(key, value, dict):
@@ -51,3 +52,15 @@ class RedirectStderrStream:
         self.stderr_handle.flush()
         sys.stderr = self.original_stderr
         self.stderr_handle.close()
+
+
+def comp_files_and_dirs(dcmp, result=[]):
+    for name in dcmp.diff_files:
+        result.append("diff_file %s found in %s and %s" % (name, dcmp.left, dcmp.right))
+    for name in dcmp.left_only:
+        result.append("file/dir %s found only in %s" % (name, dcmp.left))
+    for name in dcmp.right_only:
+        result.append("file/dir %s found only in %s" % (name, dcmp.right))
+    for sub_dcmp in dcmp.subdirs.values():
+        comp_files_and_dirs(sub_dcmp, result)
+    return result

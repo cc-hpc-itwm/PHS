@@ -267,8 +267,8 @@ class ParameterDefinition:
             self.bayesian_options_round_digits_dict_list, columns=parameter_names_ordered_list)
 
         for tuple_i in self.data_types_ordered_list:
+            par = tuple_i[0]
             if tuple_i[1] != self.expression_data_type_flag:
-                par = tuple_i[0]
                 self.parameter_frame[par] = self.parameter_frame[par].astype(tuple_i[1])
             else:
                 self.parameter_frame[par] = self.parameter_frame[par].astype(str)

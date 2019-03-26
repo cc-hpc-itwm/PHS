@@ -1,0 +1,4 @@
+x=1.229
+f=math.tan(x)
+iterations=3
+s="string3"

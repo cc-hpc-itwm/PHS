@@ -1,32 +1,37 @@
 import phs.parameter_definition
-import filecmp
+import phs.utils
 import random as rd
+import os
+import filecmp
+import tempfile
 
 
-def test_parameter_definition(tmpdir):
-    rd.seed(5)
-    subdir = 'subdir'
-    tmpdir.mkdir(subdir)
+def test_parameter_definition():
+    with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
 
-    pardef = phs.parameter_definition.ParameterDefinition()
+        rd.seed(5)
 
-    pardef.set_data_types_and_order([('x', float), ('f', 'expr'), ('iterations', int), ('s', str)])
+        pardef = phs.parameter_definition.ParameterDefinition()
 
-    pardef.add_individual_parameter_set(
-        number_of_sets=3,
-        set={'x': {'type': 'random', 'bounds': [-5, 5], 'distribution': 'uniform', 'round_digits': 3},
-             'f': {'type': 'random_from_list', 'lst': ['math.sin(x)', 'math.cos(x)', 'math.tan(x)']},
-             'iterations': {'type': 'random', 'bounds': [1, 7], 'distribution': 'uniform', 'round_digits': 0},
-             's': {'type': 'random_from_list', 'lst': ['string1', 'string2', 'string3']}},
-        prevent_duplicate=True)
+        pardef.set_data_types_and_order(
+            [('x', float), ('f', 'expr'), ('iterations', int), ('s', str)])
 
-    pardef.export_parameter_definitions(
-        export_path=tmpdir+subdir)
+        pardef.add_individual_parameter_set(
+            number_of_sets=3,
+            set={'x': {'type': 'random', 'bounds': [-5, 5], 'distribution': 'uniform', 'round_digits': 3},
+                 'f': {'type': 'random_from_list', 'lst': ['math.sin(x)', 'math.cos(x)', 'math.tan(x)']},
+                 'iterations': {'type': 'random', 'bounds': [1, 7], 'distribution': 'uniform', 'round_digits': 0},
+                 's': {'type': 'random_from_list', 'lst': ['string1', 'string2', 'string3']}},
+            prevent_duplicate=True)
 
-    cmp = filecmp.dircmp(
-        '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_parameter_def',
-        tmpdir+subdir)
+        pardef.export_parameter_definitions(
+            export_path=tmpdir + '/par')
 
-    # cmp.report()
-    assert not cmp.diff_files   # compared directories should be identical what means empty cmp.diff_files
-    print(cmp.diff_files)
+        dcmp = filecmp.dircmp(
+            os.path.dirname(__file__) + '/fixtures/fix_parameter_def',
+            tmpdir + '/par')
+
+        # cmp.report_full_closure()
+        print(phs.utils.comp_files_and_dirs(dcmp))
+        # compared directories should be identical what means empty cmp.diff_files
+        assert not phs.utils.comp_files_and_dirs(dcmp)
