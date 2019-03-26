@@ -15,5 +15,8 @@ lint job:
 
 integration test parameter definition:
         stage: lint
+        before_script:
+                - pip install pytest
+                - pip install pytest-cov
         script:
                 - pytest --disable-pytest-warnings --cov=phs --cov-branch tests/
