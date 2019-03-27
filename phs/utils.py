@@ -1,5 +1,5 @@
 import sys
-import os
+import shutil
 
 
 RED = "\033[1;31m"
@@ -18,7 +18,13 @@ def set_default_value_to_optional_key(key, value, dict):
 
 
 def print_section(header):
-    terminal_cols, _ = os.get_terminal_size()
+    """
+    Print a green section header formated with '=' filling up the complete terminal width.
+    If terminal width cannot be If the terminal size cannot be successfully queried,
+    either because the system doesn’t support querying, or because we are not connected to a terminal,
+    the default value is (80, 24) which is the default size used by many terminal emulators.
+    """
+    terminal_cols, _ = shutil.get_terminal_size()
     sys.stdout.write(GREEN)
     print('{:=^{width}}' .format('', width=terminal_cols))
     print('{:=^{width}}' .format(' ' + header + ' ', width=terminal_cols))
@@ -27,7 +33,13 @@ def print_section(header):
 
 
 def print_subsection(header):
-    terminal_cols, _ = os.get_terminal_size()
+    """
+    Print a green section header formated with '-' filling up the complete terminal width.
+    If terminal width cannot be If the terminal size cannot be successfully queried,
+    either because the system doesn’t support querying, or because we are not connected to a terminal,
+    the default value is (80, 24) which is the default size used by many terminal emulators.
+    """
+    terminal_cols, _ = shutil.get_terminal_size()
     sys.stdout.write(GREEN)
     print('{:-^{width}}' .format('', width=terminal_cols))
     print('{:-^{width}}' .format(' ' + header + ' ', width=terminal_cols))
