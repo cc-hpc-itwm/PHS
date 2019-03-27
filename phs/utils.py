@@ -17,13 +17,8 @@ def set_default_value_to_optional_key(key, value, dict):
     return dict[key]
 
 
-def get_terminal_columns():
-    rows, columns = os.popen('stty size', 'r').read().split()
-    return columns
-
-
 def print_section(header):
-    terminal_cols = get_terminal_columns()
+    terminal_cols, _ = os.get_terminal_size()
     sys.stdout.write(GREEN)
     print('{:=^{width}}' .format('', width=terminal_cols))
     print('{:=^{width}}' .format(' ' + header + ' ', width=terminal_cols))
@@ -32,7 +27,7 @@ def print_section(header):
 
 
 def print_subsection(header):
-    terminal_cols = get_terminal_columns()
+    terminal_cols, _ = os.get_terminal_size()
     sys.stdout.write(GREEN)
     print('{:-^{width}}' .format('', width=terminal_cols))
     print('{:-^{width}}' .format(' ' + header + ' ', width=terminal_cols))
