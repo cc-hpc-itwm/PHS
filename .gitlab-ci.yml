@@ -18,5 +18,6 @@ integration test parameter definition:
         before_script:
                 - pip install pytest
                 - pip install pytest-cov
+                - ./install.sh
         script:
                 - pytest --disable-pytest-warnings --cov=phs --cov-branch tests/
