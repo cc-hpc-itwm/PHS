@@ -1,0 +1,3 @@
+Each directory is tracked by git only if it has any content.
+This readme serves this purpose.
+tmp is a directory used during CI to store temporary results for a comparision with fixtures.

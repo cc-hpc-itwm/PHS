@@ -7,6 +7,7 @@ stages:
 lint job:
         stage: lint
         before_script:
+                - pip install -q -r requirements.txt
                 - pip install -q pylint
         script:
                 - pylint --output-format=colorized --max-line-length=120 --ignored-modules=matplotlib.cm phs/
