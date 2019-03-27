@@ -45,7 +45,7 @@ def test_data_types_and_order():
         dcmp = filecmp.dircmp(
             os.path.dirname(__file__) + '/fixtures/fix_data_types_and_order',
             tmpdir,
-            ignore=['additional_information_frame.csv'])
+            ignore=['additional_information_frame.csv', 'data_types_and_order_func.py'])
 
         # cmp.report_full_closure()
         print(phs.utils.comp_files_and_dirs(dcmp))
