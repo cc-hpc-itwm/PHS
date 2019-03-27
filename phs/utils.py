@@ -1,5 +1,14 @@
 import sys
-from filecmp import dircmp
+import os
+
+
+RED = "\033[1;31m"
+BLUE = "\033[1;34m"
+CYAN = "\033[1;36m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+BOLD = "\033[;1m"
+REVERSE = "\033[;7m"
 
 
 def set_default_value_to_optional_key(key, value, dict):
@@ -8,16 +17,27 @@ def set_default_value_to_optional_key(key, value, dict):
     return dict[key]
 
 
+def get_terminal_columns():
+    rows, columns = os.popen('stty size', 'r').read().split()
+    return columns
+
+
 def print_section(header):
-    print('{:=^120}' .format(''))
-    print('{:=^120}' .format(' ' + header + ' '))
-    print('{:=^120}' .format(''))
+    terminal_cols = get_terminal_columns()
+    sys.stdout.write(GREEN)
+    print('{:=^{width}}' .format('', width=terminal_cols))
+    print('{:=^{width}}' .format(' ' + header + ' ', width=terminal_cols))
+    print('{:=^{width}}' .format('', width=terminal_cols))
+    sys.stdout.write(RESET)
 
 
 def print_subsection(header):
-    print('{:-^120}' .format(''))
-    print('{:-^120}' .format(' ' + header + ' '))
-    print('{:-^120}' .format(''))
+    terminal_cols = get_terminal_columns()
+    sys.stdout.write(GREEN)
+    print('{:-^{width}}' .format('', width=terminal_cols))
+    print('{:-^{width}}' .format(' ' + header + ' ', width=terminal_cols))
+    print('{:-^{width}}' .format('', width=terminal_cols))
+    sys.stdout.write(RESET)
 
 
 class RedirectStdoutStream:
