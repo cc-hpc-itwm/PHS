@@ -22,4 +22,4 @@ integration test parameter definition:
                 - pip install -q -r requirements.txt
                 - ./install.sh
         script:
-                - pytest --disable-pytest-warnings --cov=phs --cov-branch tests/
+                - pytest --disable-pytest-warnings --cov=phs tests/
