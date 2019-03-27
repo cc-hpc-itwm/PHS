@@ -1,11 +1,11 @@
-import phs.parameter_definition
-import phs.parallel_hyperparameter_search
-import phs.utils
 import random as rd
 import os
 from pathlib import Path
 import filecmp
 import tempfile
+import phs.parameter_definition
+import phs.parallel_hyperparameter_search
+import phs.utils
 
 
 def test_data_types_and_order():

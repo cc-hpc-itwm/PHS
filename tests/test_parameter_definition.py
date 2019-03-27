@@ -1,9 +1,9 @@
-import phs.parameter_definition
-import phs.utils
 import random as rd
 import os
 import filecmp
 import tempfile
+import phs.parameter_definition
+import phs.utils
 
 
 def test_parameter_definition():

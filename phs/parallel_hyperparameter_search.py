@@ -323,7 +323,7 @@ class ParallelHyperparameterSearch:
 
         elif self.parallelization == 'dask':
             self.additional_submit_kwargs = {'fifo_timeout': '0ms'}
-            from dask.distributed import Client, progress, as_completed, scheduler, wait
+            from dask.distributed import Client, progress, as_completed, wait
             DASK_MASTER_IP = os.environ['DASK_MASTER_IP']
             DASK_MASTER_PORT = os.environ['DASK_MASTER_PORT']
             with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='10s') as client:

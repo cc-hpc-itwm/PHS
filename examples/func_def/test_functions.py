@@ -1,3 +1,4 @@
+# pylint: disable=E0602
 import math
 
 

@@ -34,7 +34,7 @@ class PostProcessing:
             '/parameter_definitions/bayesian_register_frame'
 
         if not os.path.isdir(self.experiment_dir):
-            raise ValueError('directory ' + self.working_dir + ' doesn\'t exist.')
+            raise ValueError('directory ' + self.experiment_dir + ' doesn\'t exist.')
         else:
             if not os.path.isdir(self.post_processing_path_out):
                 os.mkdir(self.post_processing_path_out)

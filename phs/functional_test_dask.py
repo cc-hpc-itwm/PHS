@@ -1,8 +1,9 @@
+import examples.func_def.test_functions
+# import carme
+from dask.distributed import Client, as_completed
 import os
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
-from dask.distributed import Client, as_completed
-import carme
 # carme.resetKernel()
 # carme.addCarmePythonPath('/home/HabelitzP/parallel_hyperparameter_search/examples')
 # carme.resetKernel()
@@ -10,14 +11,13 @@ import carme
 # repository_root_dir = '/home/HabelitzP' #(example:'/home/NAME')
 # import sys
 # sys.path.append(repository_root_dir + '/parallel_hyperparameter_search/examples')
-import examples.test_functions
 
 '''def task(hyperpar):
     exec(hyperpar, globals(), globals())
     result = x * y
     return result'''
-par = {'hyperpar':'x=2\ny=3'}
-print(examples.test_functions.test_griewank(par))
+par = {'hyperpar': 'x=2\ny=3'}
+print(examples.func_def.test_functions.test_griewank(par))
 DASK_MASTER_IP = os.environ['DASK_MASTER_IP']
 DASK_MASTER_PORT = os.environ['DASK_MASTER_PORT']
 sub_future = []
@@ -27,7 +27,7 @@ with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='20s') as client:
     client.upload_file('/home/HabelitzP/parallel_hyperparameter_search/examples/test_functions.py')
     for s in parameter_string_list:
         parameter = {'hyperpar': s}
-        sub_future.append(client.submit(examples.test_functions.test_griewank, parameter))
+        sub_future.append(client.submit(examples.func_def.test_functions.test_griewank, parameter))
     for f in as_completed(sub_future):
         # errors occuring during execution of future f inside workers are fetched and reraised with the result() method
         print(f.result())

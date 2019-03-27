@@ -9,9 +9,9 @@ lint job:
         before_script:
                 - pip install -q pylint
         script:
-                - pylint phs/
-                - pylint examples/
-                - pylint tests/
+                - pylint --output-format=colorized --max-line-length=120 --ignored-modules=matplotlib.cm phs/
+                - pylint --output-format=colorized --max-line-length=120 --ignored-modules=matplotlib.cm examples/
+                - pylint --output-format=colorized --max-line-length=120 --ignored-modules=matplotlib.cm test/
 
 integration test parameter definition:
         stage: lint
