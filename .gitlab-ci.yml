@@ -15,7 +15,7 @@ lint job:
                 - pylint --exit-zero --output-format=colorized --max-line-length=120 --ignored-modules=matplotlib.cm tests/
 
 integration test parameter definition:
-        stage: lint
+        stage: test
         before_script:
                 - pip install -q pytest
                 - pip install -q pytest-cov
