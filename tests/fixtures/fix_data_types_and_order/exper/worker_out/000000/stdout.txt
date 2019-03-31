@@ -1,4 +1,4 @@
-x=1.229
-f=math.tan(x)
-iterations=3
+x=-1.122
+f=math.cos(x)
+iterations=5
 s="string3"

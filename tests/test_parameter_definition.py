@@ -7,9 +7,8 @@ import phs.utils
 
 
 def test_parameter_definition():
+    rd.seed(8856)
     with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
-
-        rd.seed(5)
 
         pardef = phs.parameter_definition.ParameterDefinition()
 
@@ -28,10 +27,16 @@ def test_parameter_definition():
             export_path=tmpdir + '/par')
 
         dcmp = filecmp.dircmp(
-            os.path.dirname(__file__) + '/fixtures/fix_parameter_def',
+            os.path.dirname(__file__) + '/fixtures/fix_parameter_def/par',
             tmpdir + '/par')
 
         # cmp.report_full_closure()
         print(phs.utils.comp_files_and_dirs(dcmp))
         # compared directories should be identical what means empty cmp.diff_files
+        rd.seed()   # reseed with current system time
         assert not phs.utils.comp_files_and_dirs(dcmp)
+
+
+'''fixture paths
+    export_path='/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_parameter_def/par'
+    '''

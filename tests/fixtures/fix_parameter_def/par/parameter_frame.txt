@@ -1,0 +1,4 @@
+       x            f  iterations        s
+0 -1.775  math.sin(x)           4  string2
+1  0.199  math.cos(x)           1  string3
+2  3.910  math.cos(x)           5  string3

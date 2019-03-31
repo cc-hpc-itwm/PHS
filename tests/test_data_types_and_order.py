@@ -9,9 +9,8 @@ import phs.utils
 
 
 def test_data_types_and_order():
+    rd.seed(1109)
     with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
-
-        rd.seed(5)
 
         pardef = phs.parameter_definition.ParameterDefinition()
 
@@ -50,13 +49,16 @@ def test_data_types_and_order():
         # cmp.report_full_closure()
         print(phs.utils.comp_files_and_dirs(dcmp))
         # compared directories should be identical what means empty cmp.diff_files
+        rd.seed()   # reseed with current system time
         assert not phs.utils.comp_files_and_dirs(dcmp)
 
         '''fixture paths
-            export_path='/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_data_types_and_order/par')
+            export_path='/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_data_types_and_order/par'
 
             'experiment_dir':
             '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_data_types_and_order'
+            'target_module_root_dir':
+            '/home/habelitz/parallel_hyperparameter_search/examples/func_def'
             'parameter_definitions_root_dir_in':
             '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_data_types_and_order/par'
             '''

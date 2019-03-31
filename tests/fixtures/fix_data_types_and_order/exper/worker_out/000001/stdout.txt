@@ -1,4 +1,4 @@
-x=4.425
-f=math.tan(x)
-iterations=5
+x=0.396
+f=math.sin(x)
+iterations=4
 s="string3"

@@ -1,5 +1,6 @@
 import random as rd
 import os
+import sys
 from pathlib import Path
 import filecmp
 import tempfile
@@ -9,10 +10,11 @@ import phs.utils
 
 
 def test_quick_start():
-    with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
+    rd.seed(8876)
+    with tempfile.TemporaryDirectory(
+            dir=os.path.dirname(__file__) + '/tmp', suffix=sys._getframe().f_code.co_name) as tmpdir:
 
-        rd.seed(5)
-
+        print(tmpdir)
         pardef = phs.parameter_definition.ParameterDefinition()
 
         pardef.set_data_types_and_order([('x', float), ('y', float)])
@@ -25,8 +27,8 @@ def test_quick_start():
 
         pardef.add_individual_parameter_set(
             number_of_sets=10,
-            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 3},
-                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 3}})
+            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2},
+                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2}})
 
         pardef.export_parameter_definitions(
             export_path=tmpdir + '/par')
@@ -43,6 +45,14 @@ def test_quick_start():
 
         hs.start_execution()
 
+        with open(tmpdir + "/exper/results/result_frame.csv") as f:
+            data = f.read()
+            print(data)
+
+        with open(str(Path(os.path.dirname(__file__))) + "/fixtures/fix_quick_start/exper/results/result_frame.csv") as f:
+            data = f.read()
+            print(data)
+
         dcmp = filecmp.dircmp(
             os.path.dirname(__file__) + '/fixtures/fix_quick_start',
             tmpdir,
@@ -51,10 +61,11 @@ def test_quick_start():
         # cmp.report_full_closure()
         print(phs.utils.comp_files_and_dirs(dcmp))
         # compared directories should be identical what means empty cmp.diff_files
+        rd.seed()   # reseed with current system time
         assert not phs.utils.comp_files_and_dirs(dcmp)
 
         '''fixture paths
-                    export_path='/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_quick_start/par')
+                    export_path='/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_quick_start/par'
 
                     'experiment_dir':
                     '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_quick_start'

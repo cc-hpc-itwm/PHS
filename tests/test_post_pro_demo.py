@@ -1,5 +1,6 @@
 import random as rd
 import os
+import sys
 from pathlib import Path
 import filecmp
 import tempfile
@@ -10,10 +11,11 @@ import phs.utils
 
 
 def test_post_pro_demo():
-    with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
+    rd.seed(435)
+    with tempfile.TemporaryDirectory(
+            dir=os.path.dirname(__file__) + '/tmp', suffix=sys._getframe().f_code.co_name) as tmpdir:
 
-        rd.seed(5)
-
+        print(tmpdir)
         pardef = phs.parameter_definition.ParameterDefinition()
 
         pardef.set_data_types_and_order([('x', float), ('y', float)])
@@ -25,9 +27,9 @@ def test_post_pro_demo():
             prevent_duplicate=True)
 
         pardef.add_individual_parameter_set(
-            number_of_sets=20,
-            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 3},
-                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 3}})
+            number_of_sets=8,
+            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2},
+                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2}})
 
         pardef.export_parameter_definitions(
             export_path=tmpdir + '/par')
@@ -61,21 +63,32 @@ def test_post_pro_demo():
         post_pro.create_worker_timeline(name='worker_timeline_post')
         post_pro.create_parameter_combination(name='parameter_combination_post')
 
+        with open(tmpdir + "/exper/results/result_frame.csv") as f:
+            data = f.read()
+            print(data)
+
+        with open(str(Path(os.path.dirname(__file__))) + "/fixtures/fix_post_pro_demo/exper/results/result_frame.csv") as f:
+            data = f.read()
+            print(data)
+
         dcmp = filecmp.dircmp(
             os.path.dirname(__file__) + '/fixtures/fix_post_pro_demo',
             tmpdir,
             ignore=['additional_information_frame.csv', 'basic_test_functions.py',
                     'worker_timeline_post.png', 'worker_timeline_post.pdf',
-                    'evo_post.pdf', 'parameter_combination_post.pdf'])
+                    'evo_post.pdf', 'evo_post.png',
+                    'parameter_combination_post.pdf', 'parameter_combination_post.png',
+                    'plot_xyr_post.gif', 'plot_xyr_post_contour.gif'])
 
         # cmp.report_full_closure()
         print(phs.utils.comp_files_and_dirs(dcmp))
         # compared directories should be identical what means empty cmp.diff_files
+        rd.seed()   # reseed with current system time
         assert not phs.utils.comp_files_and_dirs(dcmp)
 
 
 '''fixture paths
-    export_path = '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_post_pro_demo/par')
+    export_path = '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_post_pro_demo/par'
 
     'experiment_dir':
     '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_post_pro_demo'
