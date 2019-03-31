@@ -1,8 +1,19 @@
 image: python:3.6
 
 stages:
+        - debug
         - lint
         - test
+dev job:
+        stage: debug
+        before_script:
+                - ./install.sh
+        script:
+                - cd tests/
+                - ls -la
+                - cd fixtures/fix_quick_start/par
+                - ls -la
+                - cat parameter_frame.txt 
 
 lint job:
         stage: lint
