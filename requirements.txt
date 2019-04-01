@@ -12,7 +12,7 @@ imageio == 2.5.0
 
 # examples/func_def/worker_out_demo_func.py: 2
 # phs/monitor_functions.py: 8,9,10,11,12
-matplotlib == 3.0.3
+matplotlib
 
 # phs/bayes.py: 3
 # phs/monitor_functions.py: 1
