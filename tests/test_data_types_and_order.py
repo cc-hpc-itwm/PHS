@@ -53,7 +53,7 @@ def test_data_types_and_order():
         assert not phs.utils.comp_files_and_dirs(dcmp)
 
         '''fixture paths
-            export_path='/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_data_types_and_order/par')
+            export_path='/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_data_types_and_order/par'
 
             'experiment_dir':
             '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_data_types_and_order'
