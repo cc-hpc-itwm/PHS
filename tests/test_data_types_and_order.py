@@ -9,9 +9,8 @@ import phs.utils
 
 
 def test_data_types_and_order():
+    rd.seed(1109)
     with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
-
-        rd.seed(1109)
 
         pardef = phs.parameter_definition.ParameterDefinition()
 

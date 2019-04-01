@@ -9,9 +9,8 @@ import phs.utils
 
 
 def test_quick_start():
+    rd.seed(8876)
     with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
-
-        rd.seed(8876)
 
         pardef = phs.parameter_definition.ParameterDefinition()
 
