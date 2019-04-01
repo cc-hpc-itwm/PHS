@@ -27,7 +27,7 @@ def test_post_pro_demo():
             prevent_duplicate=True)
 
         pardef.add_individual_parameter_set(
-            number_of_sets=20,
+            number_of_sets=8,
             set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2},
                  'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2}})
 
