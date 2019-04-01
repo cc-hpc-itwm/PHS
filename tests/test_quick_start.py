@@ -43,7 +43,7 @@ def test_quick_start():
 
         hs.start_execution()
 
-       with open(tmpdir + "/exper/results/result_frame.csv") as f:
+        with open(tmpdir + "/exper/results/result_frame.csv") as f:
             data = f.read()
             print(data)
 
@@ -60,7 +60,6 @@ def test_quick_start():
         print(phs.utils.comp_files_and_dirs(dcmp))
         # compared directories should be identical what means empty cmp.diff_files
         assert not phs.utils.comp_files_and_dirs(dcmp)
-
 
         '''fixture paths
                     export_path='/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_quick_start/par')
