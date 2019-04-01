@@ -76,7 +76,9 @@ def test_post_pro_demo():
             tmpdir,
             ignore=['additional_information_frame.csv', 'basic_test_functions.py',
                     'worker_timeline_post.png', 'worker_timeline_post.pdf',
-                    'evo_post.pdf', 'parameter_combination_post.pdf'])
+                    'evo_post.pdf', 'evo_post.png',
+                    'parameter_combination_post.pdf', 'parameter_combination_post.png',
+                    'plot_xyr_post.gif', 'plot_xyr_post_contour.gif'])
 
         # cmp.report_full_closure()
         print(phs.utils.comp_files_and_dirs(dcmp))
