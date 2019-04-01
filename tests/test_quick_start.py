@@ -53,7 +53,6 @@ def test_quick_start():
             data = f.read()
             print(data)
 
-        print(os.path.dirname(__file__), 'fix_quick_start')
         dcmp = filecmp.dircmp(
             os.path.dirname(__file__) + '/fixtures/fix_quick_start',
             tmpdir,

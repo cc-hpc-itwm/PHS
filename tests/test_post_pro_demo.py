@@ -63,6 +63,14 @@ def test_post_pro_demo():
         post_pro.create_worker_timeline(name='worker_timeline_post')
         post_pro.create_parameter_combination(name='parameter_combination_post')
 
+        with open(tmpdir + "/exper/results/result_frame.csv") as f:
+            data = f.read()
+            print(data)
+
+        with open(str(Path(os.path.dirname(__file__))) + "/fixtures/fix_post_pro_demo/exper/results/result_frame.csv") as f:
+            data = f.read()
+            print(data)
+
         dcmp = filecmp.dircmp(
             os.path.dirname(__file__) + '/fixtures/fix_post_pro_demo',
             tmpdir,
