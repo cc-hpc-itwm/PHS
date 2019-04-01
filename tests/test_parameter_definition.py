@@ -7,9 +7,8 @@ import phs.utils
 
 
 def test_parameter_definition():
+    rd.seed(8856)
     with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
-
-        rd.seed(8856)
 
         pardef = phs.parameter_definition.ParameterDefinition()
 
@@ -28,7 +27,7 @@ def test_parameter_definition():
             export_path=tmpdir + '/par')
 
         dcmp = filecmp.dircmp(
-            os.path.dirname(__file__) + '/fixtures/fix_parameter_def',
+            os.path.dirname(__file__) + '/fixtures/fix_parameter_def/par',
             tmpdir + '/par')
 
         # cmp.report_full_closure()
