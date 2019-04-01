@@ -25,8 +25,8 @@ def test_quick_start():
 
         pardef.add_individual_parameter_set(
             number_of_sets=10,
-            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 3},
-                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 3}})
+            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2},
+                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2}})
 
         pardef.export_parameter_definitions(
             export_path=tmpdir + '/par')
