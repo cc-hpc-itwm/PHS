@@ -11,7 +11,7 @@ import phs.utils
 
 def test_post_pro_demo():
     rd.seed(435)
-    with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
+    with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp' + __name__) as tmpdir:
 
         pardef = phs.parameter_definition.ParameterDefinition()
 
