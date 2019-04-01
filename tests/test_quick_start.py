@@ -1,5 +1,6 @@
 import random as rd
 import os
+import sys
 from pathlib import Path
 import filecmp
 import tempfile
@@ -10,7 +11,8 @@ import phs.utils
 
 def test_quick_start():
     rd.seed(8876)
-    with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
+    with tempfile.TemporaryDirectory(
+            dir=os.path.dirname(__file__) + '/tmp', suffix=sys._getframe().f_code.co_name) as tmpdir:
 
         pardef = phs.parameter_definition.ParameterDefinition()
 
