@@ -48,6 +48,11 @@ def test_quick_start():
             tmpdir,
             ignore=['additional_information_frame.csv', 'basic_test_functions.py'])
 
+        # cmp.report_full_closure()
+        print(phs.utils.comp_files_and_dirs(dcmp))
+        # compared directories should be identical what means empty cmp.diff_files
+        assert not phs.utils.comp_files_and_dirs(dcmp)
+
         with open(tmpdir + "/exper/results/result_frame.csv") as f:
             data = f.read()
             print(data)
@@ -55,11 +60,6 @@ def test_quick_start():
         with open(str(Path(os.path.dirname(__file__))) + "/fixtures/fix_quick_start/exper/results/result_frame.csv") as f:
             data = f.read()
             print(data)
-
-        # cmp.report_full_closure()
-        print(phs.utils.comp_files_and_dirs(dcmp))
-        # compared directories should be identical what means empty cmp.diff_files
-        assert not phs.utils.comp_files_and_dirs(dcmp)
 
         '''fixture paths
                     export_path='/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_quick_start/par')
