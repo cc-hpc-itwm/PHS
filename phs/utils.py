@@ -81,7 +81,9 @@ class RedirectStderrStream:
         self.stderr_handle.close()
 
 
-def comp_files_and_dirs(dcmp, result=[]):
+def comp_files_and_dirs(dcmp, result=None):
+    if result is None:
+        result = []
     for name in dcmp.diff_files:
         result.append("diff_file %s found in %s and %s" % (name, dcmp.left, dcmp.right))
     for name in dcmp.left_only:

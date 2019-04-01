@@ -53,14 +53,14 @@ def test_quick_start():
             data = f.read()
             print(data)
 
-        print(os.path.dirname(__file__))
+        print(os.path.dirname(__file__), 'fix_quick_start')
         dcmp = filecmp.dircmp(
             os.path.dirname(__file__) + '/fixtures/fix_quick_start',
             tmpdir,
             ignore=['additional_information_frame.csv', 'basic_test_functions.py'])
 
         # cmp.report_full_closure()
-        print(phs.utils.comp_files_and_dirs(dcmp))
+        print(phs.utils.comp_files_and_dirs(dcmp).join("\n"))
         # compared directories should be identical what means empty cmp.diff_files
         rd.seed()   # reseed with current system time
         assert not phs.utils.comp_files_and_dirs(dcmp)
