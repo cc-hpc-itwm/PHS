@@ -10,7 +10,7 @@ import phs.post_processing
 import phs.utils
 
 
-def test_post_pro_demo():
+def post_pro_demo():
     rd.seed(435)
     with tempfile.TemporaryDirectory(
             dir=os.path.dirname(__file__) + '/tmp', suffix=sys._getframe().f_code.co_name) as tmpdir:
