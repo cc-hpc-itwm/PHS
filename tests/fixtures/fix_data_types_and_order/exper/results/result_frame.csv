@@ -1,4 +1,4 @@
 index,x,f,iterations,s,result
-0,1.229,math.tan(x),3,string3,2.8108895407384904
-1,4.425,math.tan(x),5,string3,3.3832765564232887
-2,-4.71,math.cos(x),6,string1,-0.0023889781122815386
+0,-1.122,math.cos(x),5,string3,0.43388137522789066
+1,0.396,math.sin(x),4,string3,0.385730992814697
+2,1.73,math.sin(x),7,string1,0.9873538397007164

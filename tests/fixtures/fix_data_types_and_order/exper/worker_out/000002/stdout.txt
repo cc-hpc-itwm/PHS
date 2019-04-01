@@ -1,4 +1,4 @@
-x=-4.71
-f=math.cos(x)
-iterations=6
+x=1.73
+f=math.sin(x)
+iterations=7
 s="string1"

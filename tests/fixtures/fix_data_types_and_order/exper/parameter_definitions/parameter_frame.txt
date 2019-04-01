@@ -1,4 +1,4 @@
        x            f  iterations        s
-0  1.229  math.tan(x)           3  string3
-1  4.425  math.tan(x)           5  string3
-2 -4.710  math.cos(x)           6  string1
+0 -1.122  math.cos(x)           5  string3
+1  0.396  math.sin(x)           4  string3
+2  1.730  math.sin(x)           7  string1

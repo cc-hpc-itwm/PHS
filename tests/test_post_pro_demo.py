@@ -9,10 +9,10 @@ import phs.post_processing
 import phs.utils
 
 
-def post_pro_demo():
+def test_post_pro_demo():
     with tempfile.TemporaryDirectory(dir=os.path.dirname(__file__) + '/tmp') as tmpdir:
 
-        rd.seed(5)
+        rd.seed(435)
 
         pardef = phs.parameter_definition.ParameterDefinition()
 
@@ -26,8 +26,8 @@ def post_pro_demo():
 
         pardef.add_individual_parameter_set(
             number_of_sets=20,
-            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 3},
-                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 3}})
+            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2},
+                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2}})
 
         pardef.export_parameter_definitions(
             export_path=tmpdir + '/par')
@@ -71,11 +71,12 @@ def post_pro_demo():
         # cmp.report_full_closure()
         print(phs.utils.comp_files_and_dirs(dcmp))
         # compared directories should be identical what means empty cmp.diff_files
+        rd.seed()   # reseed with current system time
         assert not phs.utils.comp_files_and_dirs(dcmp)
 
 
 '''fixture paths
-    export_path = '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_post_pro_demo/par')
+    export_path = '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_post_pro_demo/par'
 
     'experiment_dir':
     '/home/habelitz/parallel_hyperparameter_search/tests/fixtures/fix_post_pro_demo'
