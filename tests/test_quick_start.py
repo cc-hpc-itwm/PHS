@@ -60,7 +60,7 @@ def test_quick_start():
             ignore=['additional_information_frame.csv', 'basic_test_functions.py'])
 
         # cmp.report_full_closure()
-        print(phs.utils.comp_files_and_dirs(dcmp).join("\n"))
+        print(phs.utils.comp_files_and_dirs(dcmp))
         # compared directories should be identical what means empty cmp.diff_files
         rd.seed()   # reseed with current system time
         assert not phs.utils.comp_files_and_dirs(dcmp)
