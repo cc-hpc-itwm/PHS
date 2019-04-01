@@ -15,6 +15,7 @@ def test_post_pro_demo():
     with tempfile.TemporaryDirectory(
             dir=os.path.dirname(__file__) + '/tmp', suffix=sys._getframe().f_code.co_name) as tmpdir:
 
+        print(tmpdir)
         pardef = phs.parameter_definition.ParameterDefinition()
 
         pardef.set_data_types_and_order([('x', float), ('y', float)])
