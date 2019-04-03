@@ -10,7 +10,7 @@ import phs.utils
 
 
 def test_quick_start():
-    rd.seed(8876)
+    rd.seed(8877)
     with tempfile.TemporaryDirectory(
             dir=os.path.dirname(__file__) + '/tmp', suffix=sys._getframe().f_code.co_name) as tmpdir:
 
@@ -20,15 +20,15 @@ def test_quick_start():
         pardef.set_data_types_and_order([('x', float), ('y', float)])
 
         pardef.add_individual_parameter_set(
-            number_of_sets=20,
+            number_of_sets=4,
             set={'x': {'type': 'random', 'bounds': [-5, 5], 'distribution': 'uniform', 'round_digits': 3},
                  'y': {'type': 'random_from_list', 'lst': [1.2, 3.4, 5.4, 6.3]}},
             prevent_duplicate=True)
 
         pardef.add_individual_parameter_set(
-            number_of_sets=10,
-            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2},
-                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 2}})
+            number_of_sets=2,
+            set={'x': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 1},
+                 'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 1}})
 
         pardef.export_parameter_definitions(
             export_path=tmpdir + '/par')
