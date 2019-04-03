@@ -24,3 +24,12 @@ def test_griewank(parameter):
     exec(parameter['hyperpar'], globals(), globals())
     z = (x*x+y*y)/4000 - math.cos(x)*math.cos(y/math.sqrt(2)) + 1
     return z
+
+
+def test_polynom(parameter):
+    # x [-3,3]
+    # y [-3,3]
+    # min -1 at (0,1)
+    exec(parameter['hyperpar'], globals(), globals())
+    z = -(-x ** 2 - (y - 1) ** 2 + 1)
+    return z

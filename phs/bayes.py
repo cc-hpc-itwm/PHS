@@ -96,11 +96,11 @@ def compute_bayesian_suggestion(at_index,
     xp = current_result_frame[bayesian_col_name_list].values
     yp = current_result_frame[result_col_name].values
 
-    kernel = gp.kernels.Matern()
-    alpha = 1e-5
+    kernel = gp.kernels.Matern(nu=2.5)
+    alpha = 1e-6
     # epsilon = 1e-7
     model = gp.GaussianProcessRegressor(
-        kernel=kernel, alpha=alpha, n_restarts_optimizer=10, normalize_y=True)
+        kernel=kernel, alpha=alpha, n_restarts_optimizer=25, normalize_y=True)
     model.fit(xp, yp)
     next_sample = sample_next_hyperparameter(
         expected_improvement, model, yp, greater_is_better=False, bounds=bounds, n_restarts=100)
@@ -157,9 +157,10 @@ def expected_improvement(x, gaussian_process, evaluated_loss, greater_is_better=
 
     # In case sigma equals zero
     with np.errstate(divide='ignore'):
-        Z = scaling_factor * (mu - loss_optimum) / sigma
+        xi = 0.0
+        Z = scaling_factor * (mu - loss_optimum - xi) / sigma
         expected_improvement = scaling_factor * \
-            (mu - loss_optimum) * norm.cdf(Z) + sigma * norm.pdf(Z)
+            (mu - loss_optimum - xi) * norm.cdf(Z) + sigma * norm.pdf(Z)
         expected_improvement[sigma == 0.0] == 0.0
 
     return -1 * expected_improvement
