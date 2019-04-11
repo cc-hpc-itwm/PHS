@@ -20,7 +20,7 @@ def def_quick_start(experiment_dir, target_module_root_dir):
         prevent_duplicate=True)
 
     pardef.add_individual_parameter_set(
-        number_of_sets=2,
+        number_of_sets=1,
         set={'x': {'type': 'bayesian', 'bounds': [-5, 5]},
              'y': {'type': 'bayesian', 'bounds': [-5, 5]}})
 

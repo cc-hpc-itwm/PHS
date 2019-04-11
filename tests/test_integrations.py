@@ -20,14 +20,14 @@ def template_test_wrapper(func, relative_fixture_path):
             experiment_dir=tmpdir_ex,
             target_module_root_dir=str(Path(os.path.dirname(__file__)).parent) + '/examples/func_def')
 
-        with open(tmpdir_ex + "/results/result_frame.csv") as f:
+        '''with open(tmpdir_ex + "/results/result_frame.csv") as f:
             data = f.read()
             print(data)
 
         with open(str(Path(os.path.dirname(__file__))) + relative_fixture_path +
                   "/results/result_frame.csv") as f:
             data = f.read()
-            print(data)
+            print(data)'''
 
         dcmp = filecmp.dircmp(
             os.path.dirname(__file__) + relative_fixture_path,
@@ -49,7 +49,7 @@ def test_quick_start():
                           relative_fixture_path='/fixtures/fix_quick_start')
 
 
-'''def test_data_types_and_order():
+def test_data_types_and_order():
     template_test_wrapper(func=def_data_types_and_order.def_data_types_and_order,
                           relative_fixture_path='/fixtures/fix_data_types_and_order')
 
@@ -61,4 +61,4 @@ def test_parameter_definition():
 
 def test_post_pro_demo():
     template_test_wrapper(func=def_post_pro_demo.def_post_pro_demo,
-                          relative_fixture_path='/fixtures/fix_post_pro_demo')'''
+                          relative_fixture_path='/fixtures/fix_post_pro_demo')
