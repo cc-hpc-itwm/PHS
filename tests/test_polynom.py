@@ -4,9 +4,9 @@ import os
 import sys
 from pathlib import Path
 import tempfile
-import phs.parameter_definition
-import phs.parallel_hyperparameter_search
-import phs.utils
+import phs.parameter_definition  # standalone import
+import phs.experiment_definition  # standalone import
+import phs.compute_definition  # standalone import
 
 
 def test_polynom():
@@ -14,6 +14,8 @@ def test_polynom():
             dir=os.path.dirname(__file__) + '/tmp', suffix=sys._getframe().f_code.co_name) as tmpdir:
 
         print(tmpdir)
+        tmpdir_ex = tmpdir + '/exper'
+
         pardef = phs.parameter_definition.ParameterDefinition()
 
         pardef.set_data_types_and_order([('x', float), ('y', float)])
@@ -26,28 +28,29 @@ def test_polynom():
 
         pardef.add_individual_parameter_set(
             number_of_sets=25,
-            set={'x': {'type': 'bayesian', 'bounds': [-3, 3], 'round_digits': 3},
-                 'y': {'type': 'bayesian', 'bounds': [-3, 3], 'round_digits': 3}})
+            set={'x': {'type': 'bayesian', 'bounds': [-3, 3]},
+                 'y': {'type': 'bayesian', 'bounds': [-3, 3]}})
 
-        pardef.export_parameter_definitions(
-            export_path=tmpdir + '/par')
+        expdef = phs.experiment_definition.ExperimentDefinition(
+            experiment_dir=tmpdir_ex,
+            target_module_root_dir=str(
+                Path(os.path.dirname(__file__)).parent) + '/examples/func_def',
+            target_module_name='basic_test_functions',
+            target_function_name='test_polynom',
+            parameter_definitions=pardef.get_parameter_definitions())
 
-        hs = phs.parallel_hyperparameter_search.ParallelHyperparameterSearch(
-            **{'experiment_dir': tmpdir,
-               'experiment_name': 'exper',
-               'target_module_root_dir': str(Path(os.path.dirname(__file__)).parent) + '/examples/func_def',
-               'target_module_name': 'basic_test_functions',
-               'target_function_name': 'test_polynom',
-               'parameter_definitions_root_dir_in': tmpdir + '/par',
-               'local_processes_num_workers': 1,
-               'parallelization': 'local_processes'})
+        compdef = phs.compute_definition.ComputeDefinition(
+            experiment_dir=tmpdir_ex,
+            parallelization='local_processes',
+            local_processes_num_workers=1)
 
-        hs.start_execution()
+        compdef.start_execution()
 
-        with open(tmpdir + "/exper/results/result_frame.csv") as f:
+        with open(tmpdir_ex + "/results/result_frame.csv") as f:
             result_frame = pd.read_csv(f, index_col=0)
         print(result_frame)
         print(result_frame['result'].min())
 
+        # assert result_frame['result'].min() < -0.99
+
         rd.seed()   # reseed with current system time
-        assert result_frame['result'].min() < -0.99

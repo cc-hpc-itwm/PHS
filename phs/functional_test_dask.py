@@ -1,4 +1,4 @@
-import examples.func_def.test_functions
+import examples.func_def.basic_test_functions
 # import carme
 from dask.distributed import Client, as_completed
 import os
@@ -17,7 +17,7 @@ pp = pprint.PrettyPrinter(indent=4)
     result = x * y
     return result'''
 par = {'hyperpar': 'x=2\ny=3'}
-print(examples.func_def.test_functions.test_griewank(par))
+print(examples.func_def.basic_test_functions.test_griewank(par))
 DASK_MASTER_IP = os.environ['DASK_MASTER_IP']
 DASK_MASTER_PORT = os.environ['DASK_MASTER_PORT']
 sub_future = []

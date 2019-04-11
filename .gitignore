@@ -12,3 +12,6 @@ docs/build/
 # swap files
 *.swp
 *.swo
+
+# pytest coverage
+.coverage*

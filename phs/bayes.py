@@ -2,7 +2,6 @@ import os
 import time
 import numpy as np
 import pandas as pd
-import math as ma
 
 import sklearn.gaussian_process as gp
 from scipy.stats import norm
@@ -16,8 +15,7 @@ def compute_bayesian_suggestion(at_index,
                                 bayesian_wait_for_all,
                                 bayesian_register_dict,
                                 bayesian_options_bounds_low_dict,
-                                bayesian_options_bounds_high_dict,
-                                bayesian_options_round_digits_dict):
+                                bayesian_options_bounds_high_dict):
     """
     Wrapper function executed on a certain worker to organize the bayesian optimization. This includes reading the
     latest .csv file with all previous results in a thread save way, preparing the data, calling the bayesian
@@ -34,7 +32,6 @@ def compute_bayesian_suggestion(at_index,
     suggested by bayesian optimization
     - **bayesian_options_bounds_low_dict** (dict): lower bound for bayesian optimization for all involved parameters
     - **bayesian_options_bounds_high_dict** (dict): upper bound for bayesian optimization for all involved parameters
-    - **bayesian_options_round_digits_dict** (dict): rounding information for suggested values
 
 
     Returns
@@ -98,19 +95,21 @@ def compute_bayesian_suggestion(at_index,
 
     kernel = gp.kernels.Matern(nu=2.5)
     alpha = 1e-6
-    # epsilon = 1e-7
     model = gp.GaussianProcessRegressor(
         kernel=kernel, alpha=alpha, n_restarts_optimizer=25, normalize_y=True)
     model.fit(xp, yp)
     next_sample = sample_next_hyperparameter(
         expected_improvement, model, yp, greater_is_better=False, bounds=bounds, n_restarts=100)
-    # if np.any(np.abs(next_sample - xp) <= epsilon):
-    #   next_sample = np.random.uniform(bounds[:, 0], bounds[:, 1], bounds.shape[0])
-    # print(next_sample)
+
     bayesian_replacement_dict = {}
     for i, col in enumerate(bayesian_col_name_list):
-        if not ma.isnan(bayesian_options_round_digits_dict[col]):
-            next_sample[i] = round(next_sample[i], int(bayesian_options_round_digits_dict[col]))
+
+        '''epsilon = np.full(shape=bounds.shape[0], fill_value=1e-7)
+        if np.any((np.all((np.abs(next_sample - xp) <= epsilon), axis=1))):
+            next_sample = np.random.uniform(bounds[:, 0], bounds[:, 1], bounds.shape[0])
+            print('\tWarning: Bayesian Optimization has suggested an already seen sample point.\
+                  \n\tHence a random sample is drawn.')'''
+
         bayesian_replacement_dict[col] = next_sample[i]
     return bayesian_replacement_dict
 

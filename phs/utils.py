@@ -47,6 +47,10 @@ def print_subsection(header):
     sys.stdout.write(RESET)
 
 
+def format_stderr():
+    sys.stderr.write(RED)
+
+
 class RedirectStdoutStream:
     def __init__(self, stdout_file):
         self.stdout_file = stdout_file

@@ -1,1 +1,0 @@
-[('x', <class 'float'>), ('f', 'expr'), ('iterations', <class 'int'>), ('s', <class 'str'>)]

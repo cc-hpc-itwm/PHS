@@ -1,6 +1,7 @@
-def main():
+def def_parameter_definition(experiment_dir, target_module_root_dir):
+    import random as rd
+    rd.seed(8856)
     import phs.parameter_definition  # standalone import
-
     pardef = phs.parameter_definition.ParameterDefinition()
 
     pardef.set_data_types_and_order([('x', float), ('y', float)])
@@ -15,8 +16,6 @@ def main():
              'y': {'type': 'random_from_list', 'lst': [1.2, 3.4, 5.4, 6.3]}},
         prevent_duplicate=True)
 
-    pardef.export_parameter_definitions(export_path='absolute/path/to/parent/folder/for/export')
+    pardef.export_parameter_definitions(export_path=experiment_dir)
 
-
-if __name__ == "__main__":
-    main()
+    rd.seed()

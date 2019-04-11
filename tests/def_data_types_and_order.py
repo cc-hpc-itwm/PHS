@@ -1,4 +1,8 @@
-def main():
+
+
+def def_data_types_and_order(experiment_dir, target_module_root_dir):
+    import random as rd
+    rd.seed(1109)
     import phs.parameter_definition  # standalone import
     import phs.experiment_definition  # standalone import
     import phs.compute_definition  # standalone import
@@ -19,20 +23,18 @@ def main():
         prevent_duplicate=True)
 
     expdef = phs.experiment_definition.ExperimentDefinition(
-        experiment_dir='/absolute/path/to/not/yet/existing/folder/your/experiments/should/be/saved',
-        target_module_root_dir='/absolute/path/to/root/dir/in/which/your/test_function/resides',
-        target_module_name='file_name_with_test_function_definition_(without_extension)',
+        experiment_dir=experiment_dir,
+        target_module_root_dir=target_module_root_dir,
+        target_module_name='data_types_and_order_func',
         target_function_name='data_types_and_order_func',
         parameter_definitions=pardef.get_parameter_definitions())
 
     compdef = phs.compute_definition.ComputeDefinition(
-        experiment_dir='/absolute/path/to/folder/with/existing/experiment',
+        experiment_dir=experiment_dir,
         parallelization='local_processes',
         local_processes_num_workers=1,
         redirect_stdout=True)
 
     compdef.start_execution()
 
-
-if __name__ == "__main__":
-    main()
+    rd.seed()

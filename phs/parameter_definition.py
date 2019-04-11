@@ -1,9 +1,9 @@
 import os
 import pandas as pd
 import random as rd
-import pickle
 
 from phs import utils
+from phs import utils_parameter_io
 
 
 class ParameterDefinition:
@@ -23,9 +23,6 @@ class ParameterDefinition:
         self.bayesian_options_bounds_high_dict = {}
         self.bayesian_options_bounds_high_dict_list = []
         self.bayesian_options_bounds_high_frame = pd.DataFrame()
-        self.bayesian_options_round_digits_dict = {}
-        self.bayesian_options_round_digits_dict_list = []
-        self.bayesian_options_round_digits_frame = pd.DataFrame()
         self.expression_data_type_flag = 'expr'
         self.finalized = False
 
@@ -117,7 +114,6 @@ class ParameterDefinition:
                     self.bayesian_register_dict[par] = 1
                     self.bayesian_options_bounds_low_dict[par] = set[par]['bounds'][0]
                     self.bayesian_options_bounds_high_dict[par] = set[par]['bounds'][1]
-                    self.bayesian_options_round_digits_dict[par] = set[par]['round_digits']
                     bayesian_in_set = True
 
             if prevent_duplicate and not bayesian_in_set:
@@ -167,8 +163,6 @@ class ParameterDefinition:
 
                 -> ```'bounds_for_all'``` (list): borders of the bayesian optimization [low, high]
 
-                -> ```'round_digits_for_all'``` (int): round value to given number of digits
-
         - **prevent_duplicate** (Default value = True): If True, each generated parameter set is checked for
         equality against all parameter sets already included in the parameter definition. In case an identity is found,
         the current parameter set is redrawn again. If there is any bayesian task in the set, the check is skipped.
@@ -212,7 +206,6 @@ class ParameterDefinition:
                     self.bayesian_register_dict[par] = 1
                     self.bayesian_options_bounds_low_dict[par] = options['bounds_for_all'][0]
                     self.bayesian_options_bounds_high_dict[par] = options['bounds_for_all'][1]
-                    self.bayesian_options_round_digits_dict[par] = options['round_digits_for_all']
                     bayesian_in_set = True
 
             if prevent_duplicate and not bayesian_in_set:
@@ -242,13 +235,11 @@ class ParameterDefinition:
         self.bayesian_register_dict_list.append(self.bayesian_register_dict)
         self.bayesian_options_bounds_low_dict_list.append(self.bayesian_options_bounds_low_dict)
         self.bayesian_options_bounds_high_dict_list.append(self.bayesian_options_bounds_high_dict)
-        self.bayesian_options_round_digits_dict_list.append(self.bayesian_options_round_digits_dict)
 
         self.parameter_dict = {}
         self.bayesian_register_dict = {}
         self.bayesian_options_bounds_low_dict = {}
         self.bayesian_options_bounds_high_dict = {}
-        self.bayesian_options_round_digits_dict = {}
 
     def finalize_parameter_definitions(self):
         """ """
@@ -263,8 +254,6 @@ class ParameterDefinition:
             self.bayesian_options_bounds_low_dict_list, columns=parameter_names_ordered_list)
         self.bayesian_options_bounds_high_frame = pd.DataFrame(
             self.bayesian_options_bounds_high_dict_list, columns=parameter_names_ordered_list)
-        self.bayesian_options_round_digits_frame = pd.DataFrame(
-            self.bayesian_options_round_digits_dict_list, columns=parameter_names_ordered_list)
 
         for tuple_i in self.data_types_ordered_list:
             par = tuple_i[0]
@@ -272,6 +261,11 @@ class ParameterDefinition:
                 self.parameter_frame[par] = self.parameter_frame[par].astype(tuple_i[1])
             else:
                 self.parameter_frame[par] = self.parameter_frame[par].astype(str)
+
+        rows, columns = self.parameter_frame.shape
+        print('', end='\n')
+        print('\t{0:30}{1:}' .format('number of parameters:', columns))
+        print('\t{0:30}{1:}' .format('number of parameter sets:', rows), end='\n\n')
 
         self.finalized = True
 
@@ -294,53 +288,23 @@ class ParameterDefinition:
 
         if not self.finalized:
             self.finalize_parameter_definitions()
-        self.path_to_parameter_frame = self.export_path + '/parameter_frame'
-        self.path_to_bayesian_register_frame = self.export_path + '/bayesian_register_frame'
-        self.path_to_bayesian_options_bounds_low_frame = self.export_path + '/bayesian_options_bounds_low_frame'
-        self.path_to_bayesian_options_bounds_high_frame = self.export_path + '/bayesian_options_bounds_high_frame'
-        self.path_to_bayesian_options_round_digits_frame = self.export_path + \
-            '/bayesian_options_round_digits_frame'
-        self.path_to_data_types_ordered_list = self.export_path + '/data_types_ordered_list'
 
-        self.parameter_frame.to_pickle(self.path_to_parameter_frame + '.pkl')
-        with open(self.path_to_parameter_frame + '.txt', 'w') as f:
-            f.write(self.parameter_frame.to_string())
-        self.parameter_frame.to_csv(self.path_to_parameter_frame +
-                                    '.csv', sep='\t', index=True, header=True)
+        utils_parameter_io.save_parameter_definitions(
+            export_path=export_path,
+            parameter_frame=self.parameter_frame,
+            bayesian_register_frame=self.bayesian_register_frame,
+            bayesian_options_bounds_low_frame=self.bayesian_options_bounds_low_frame,
+            bayesian_options_bounds_high_frame=self.bayesian_options_bounds_high_frame,
+            data_types_ordered_list=self.data_types_ordered_list)
 
-        self.bayesian_register_frame.to_pickle(self.path_to_bayesian_register_frame + '.pkl')
-        with open(self.path_to_bayesian_register_frame + '.txt', 'w') as f:
-            f.write(self.bayesian_register_frame.to_string())
-        self.bayesian_options_bounds_low_frame.to_pickle(
-            self.path_to_bayesian_options_bounds_low_frame + '.pkl')
-        with open(self.path_to_bayesian_options_bounds_low_frame + '.txt', 'w') as f:
-            f.write(self.bayesian_options_bounds_low_frame.to_string())
-        self.bayesian_options_bounds_high_frame.to_pickle(
-            self.path_to_bayesian_options_bounds_high_frame + '.pkl')
-        with open(self.path_to_bayesian_options_bounds_high_frame + '.txt', 'w') as f:
-            f.write(self.bayesian_options_bounds_high_frame.to_string())
-        self.bayesian_options_round_digits_frame.to_pickle(
-            self.path_to_bayesian_options_round_digits_frame + '.pkl')
-        with open(self.path_to_bayesian_options_round_digits_frame + '.txt', 'w') as f:
-            f.write(self.bayesian_options_round_digits_frame.to_string())
-        with open(self.path_to_data_types_ordered_list + '.pkl', 'wb') as f:
-            pickle.dump(self.data_types_ordered_list, f)
-        with open(self.path_to_data_types_ordered_list + '.txt', 'w') as f:
-            f.write(str(self.data_types_ordered_list))
+        print('\t{0:30}{1:}' .format('exported to:', export_path), end='\n\n')
 
-        rows, columns = self.parameter_frame.shape
-        print('', end='\n')
-        print('\t{0:30}{1:}' .format('number of parameters:', columns))
-        print('\t{0:30}{1:}' .format('number of parameter sets:', rows))
-        print('\t{0:30}{1:}' .format('exported to:', self.export_path), end='\n\n')
-
-    def _return_parameter_definitions(self):
+    def get_parameter_definitions(self):
         """ """
         if not self.finalized:
             self.finalize_parameter_definitions()
-        return {'parameter_frame': self.parameter_frame,
-                'bayesian_register_frame': self.bayesian_register_frame,
-                'bayesian_options_bounds_low_frame': self.bayesian_options_bounds_low_frame,
-                'bayesian_options_bounds_high_frame': self.bayesian_options_bounds_high_frame,
-                'bayesian_options_round_digits_frame': self.bayesian_options_round_digits_frame,
-                'data_types_ordered_list': self.data_types_ordered_list}
+        return (self.parameter_frame,
+                self.bayesian_register_frame,
+                self.bayesian_options_bounds_low_frame,
+                self.bayesian_options_bounds_high_frame,
+                self.data_types_ordered_list)

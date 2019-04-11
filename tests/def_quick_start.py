@@ -1,4 +1,6 @@
-def main():
+def def_quick_start(experiment_dir, target_module_root_dir):
+    import random as rd
+    rd.seed(8877)
     import phs.parameter_definition  # standalone import
     import phs.experiment_definition  # standalone import
     import phs.compute_definition  # standalone import
@@ -23,19 +25,17 @@ def main():
              'y': {'type': 'bayesian', 'bounds': [-5, 5]}})
 
     expdef = phs.experiment_definition.ExperimentDefinition(
-        experiment_dir='/absolute/path/to/not/yet/existing/folder/your/experiments/should/be/saved',
-        target_module_root_dir='/absolute/path/to/root/dir/in/which/your/test_function/resides',
-        target_module_name='file_name_with_test_function_definition_(without_extension)',
-        target_function_name='name_of_function_inside_target_module',
+        experiment_dir=experiment_dir,
+        target_module_root_dir=target_module_root_dir,
+        target_module_name='basic_test_functions',
+        target_function_name='test_griewank',
         parameter_definitions=pardef.get_parameter_definitions())
 
     compdef = phs.compute_definition.ComputeDefinition(
-        experiment_dir='/absolute/path/to/folder/with/existing/experiment',
+        experiment_dir=experiment_dir,
         parallelization='local_processes',
         local_processes_num_workers=1)
 
     compdef.start_execution()
 
-
-if __name__ == "__main__":
-    main()
+    rd.seed()

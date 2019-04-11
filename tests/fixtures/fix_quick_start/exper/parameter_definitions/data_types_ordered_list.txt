@@ -1,1 +1,0 @@
-[('x', <class 'float'>), ('y', <class 'float'>)]

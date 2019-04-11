@@ -22,8 +22,7 @@ def proxy_function(parallelization,
                    bayesian_wait_for_all=False,
                    bayesian_register_dict={},
                    bayesian_options_bounds_low_dict={},
-                   bayesian_options_bounds_high_dict={},
-                   bayesian_options_round_digits_dict={}):
+                   bayesian_options_bounds_high_dict={}):
     """
     This function is directly submitted to the scheduler, which means it is spawned on the parallel workers. It serves
     as a precursor to build the needed structure of the single string which is transfered to the target function.
@@ -58,10 +57,9 @@ def proxy_function(parallelization,
     """
 
     start_time = pd.datetime.now()
-    np.random.seed(1)
-    # t = float(np.random.rand(1))
+    np.random.seed(1)  # needed to make all bayesian optimization reproducible
     time.sleep(0.01)
-    if auxiliary_information['worker_save_path_root'] is not False or auxiliary_information['redirect_stdout']:
+    if auxiliary_information['provide_worker_path'] or auxiliary_information['redirect_stdout']:
         zero_fill = 6
         worker_save_path = auxiliary_information['worker_save_path_root'] + \
             '/' + str(index).zfill(zero_fill) + '/'
@@ -82,8 +80,7 @@ def proxy_function(parallelization,
                                                                           bayesian_wait_for_all,
                                                                           bayesian_register_dict,
                                                                           bayesian_options_bounds_low_dict,
-                                                                          bayesian_options_bounds_high_dict,
-                                                                          bayesian_options_round_digits_dict)
+                                                                          bayesian_options_bounds_high_dict)
         for col in bayesian_replacement_dict:
             arg[col] = bayesian_replacement_dict[col]
 
