@@ -14,4 +14,5 @@ docs/build/
 *.swo
 
 # pytest coverage
+.coverage
 .coverage*

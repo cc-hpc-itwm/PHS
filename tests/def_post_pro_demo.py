@@ -15,7 +15,7 @@ def def_post_pro_demo(experiment_dir, target_module_root_dir):
     pardef.set_data_types_and_order([('x', float), ('y', float)])
 
     pardef.add_individual_parameter_set(
-        number_of_sets=20,
+        number_of_sets=2,
         set={'x': {'type': 'random', 'bounds': [-5, 5], 'distribution': 'uniform', 'round_digits': 3},
              'y': {'type': 'random', 'bounds': [-5, 5], 'distribution': 'uniform', 'round_digits': 3}},
         prevent_duplicate=True)

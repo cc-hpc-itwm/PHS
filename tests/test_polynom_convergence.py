@@ -9,7 +9,7 @@ import phs.experiment_definition  # standalone import
 import phs.compute_definition  # standalone import
 
 
-def test_polynom():
+def test_polynom_convergence():
     with tempfile.TemporaryDirectory(
             dir=os.path.dirname(__file__) + '/tmp', suffix=sys._getframe().f_code.co_name) as tmpdir:
 
