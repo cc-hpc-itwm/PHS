@@ -32,7 +32,7 @@ def template_test_wrapper(func, relative_fixture_path):
         dcmp = filecmp.dircmp(
             os.path.dirname(__file__) + relative_fixture_path,
             tmpdir_ex,
-            ignore=['additional_information_frame.csv', '__pycache__',
+            ignore=['additional_information_frame.csv', 'result_frame.csv', '__pycache__',
                     'worker_timeline_post.png', 'worker_timeline_post.pdf',
                     'evo_post.pdf', 'evo_post.png',
                     'parameter_combination_post.pdf', 'parameter_combination_post.png',
