@@ -1,5 +1,5 @@
 ## Quick Start
-The easiest way to become familiar with the tool is to go through the following example of finding minima of the second order [Griewank function][2] which is a common test scenario for optimization algorithms. Code with respective output can be found in the examples folder. 
+The easiest way to become familiar with the tool is to go through the following example of finding minima of the second order [Griewank function][2] which is a common test scenario for optimization algorithms. Code with respective output can be found in the examples folder.
 
 ### 1. Prepare your target function
 
@@ -20,7 +20,7 @@ def test_griewank(parameter):
 
 + the search strategy specifies how the parameters expected by the target function should be generated
 + here 20 initial random sets are generated followed by 10 bayesian optimization sets
-+ adapt the parameter export path
++ adapt the parameter ```export_path```
 
 ```python
 import phs.parameter_definition  # standalone import
@@ -44,31 +44,36 @@ pardef.export_parameter_definitions(export_path='absolute/path/to/parent/folder/
 ```
 
 ### 3. Setup your experiment
-+ create a new script to define a phs experiment (customize the arguments ```experiment_dir```, ```target_module_root_dir```, ```target_module_name```, ```target_function_name``` and ```parameter_definitions_root_dir_in``` of the class instantiation):
-
++ define a phs experiment by customizing the arguments ```experiment_dir```, ```target_module_root_dir```, ```target_module_name```, ```target_function_name``` and ```parameter_definitions_root_dir_in``` of the class instantiation:
 
 ```python
-import phs.parallel_hyperparameter_search as phs  # standalone import
+import phs.experiment_definition  # standalone import
 # Make sure that python can import 'phs'.
 # One way is to run the 'install.sh' script provided within this project.
 
-# import CarmeModules.HyperParameterSearch.phs.parallel_hyperparameter_search as phs  # import on Carme
-
-
-hs = phs.parallel_hyperparameter_search.ParallelHyperparameterSearch(
-    **{'experiment_dir': '/absolute/path/to/parent/folder/your/experiments/should/be/saved',
-       'experiment_name': 'experiment_griewank_1',
-       'target_module_root_dir': '/absolute/path/to/root/dir/in/which/your/test_function/resides',
-       'target_module_name': 'file_name_with_test_function_definition_(without_extension)',
-       'target_function_name': 'name_of_function_inside_target_module',
-       'parameter_definitions_root_dir_in': 'absolute/path/to/parent/folder/for/import',
-       'parallelization': 'local_processes'})
-
-hs.start_execution()
-
+expdef = phs.experiment_definition.ExperimentDefinition(
+    experiment_dir='/absolute/path/to/parent/folder/your/experiments/should/be/saved',
+    target_module_root_dir='/absolute/path/to/root/dir/in/which/your/test_function/resides',
+    target_module_name='file_name_with_test_function_definition_(without_extension)',
+    target_function_name='name_of_function_inside_target_module',
+    parameter_definitions_root_dir_in='absolute/path/to/parent/folder/of/parameterdefinitions')
 ```
 
-### 4. Post process the results
+### 4. Setup your computation
++ define a computation on a previously saved experiment by providing the ```experiment_dir```. Here ```'local_processes'``` is selected as the compute environment.
+
+```python
+import phs.compute_definition  # standalone import
+
+compdef = phs.compute_definition.ComputeDefinition(
+    experiment_dir=experiment_dir,
+    parallelization='local_processes',
+    local_processes_num_workers=1)
+
+compdef.start_execution()
+```
+
+### 5. Post process the results
 + select the directory of the experiment you want to post process
 
 ```python

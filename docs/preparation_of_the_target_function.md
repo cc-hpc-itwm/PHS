@@ -2,7 +2,7 @@
 
 One key feature of the framework is its ergonomic handling. Care was taken to ensure that the entry barrier for use is as low as possible. So the extent of necessary modifications is kept to a minimum. Besides there is also the possibility to manage all kind of possible output by your function.
 
-## Necessaray Modifications
+## Necessary Modifications
 
 As briefly described in [Quick Start](quick_start.md) there are a few modifications needed to get your python script ready for use in the phs framework:
 
