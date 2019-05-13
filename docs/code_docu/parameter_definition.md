@@ -94,8 +94,6 @@ keywords become compulsary.
 
         -> ```'bounds_for_all'``` (list): borders of the bayesian optimization [low, high]
 
-        -> ```'round_digits_for_all'``` (int): round value to given number of digits
-
 - **prevent_duplicate** (Default value = True): If True, each generated parameter set is checked for
 equality against all parameter sets already included in the parameter definition. In case an identity is found,
 the current parameter set is redrawn again. If there is any bayesian task in the set, the check is skipped.
@@ -131,3 +129,7 @@ Parameters
 ----------
 - **export_path** (string): absolute path to a parent folder in which the parameter definitions are saved
 
+### get_parameter_definitions
+```python
+ParameterDefinition.get_parameter_definitions(self)
+```

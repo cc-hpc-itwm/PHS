@@ -22,7 +22,7 @@ Usage of different parameter data types including the special expression type ``
 
 ### worker_out_demo.py
 Demonstration of redirecting the standard output via ```print()``` and of providing a valid path for saving any data from inside the target function.
-+ [Experiment Definition](./docs/experiment_definition.md)
++ [Compute Definition](./docs/compute_definition.md)
 
 ### post_pro_demo.py
 The post processing capabilities are shown with previous parameter and experiment setup.
