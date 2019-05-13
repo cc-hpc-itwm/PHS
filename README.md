@@ -15,7 +15,7 @@
 + capability to continue the calculation in case of system/program failures without losing the results of already completed evaluations
 
 ## Structure
-The framework consists of the three main modules ```parameter_definition``` (see [Preparation of the Target Function](./docs/preparation_of_the_target_function.md) and [Search Strategies](./docs/search_strategies.md)), ```experiment_definition``` see ([Experiment Definition](./docs/experiment_definition.md)) and ```compute_definition``` (see [Compute Definition](./docs/compute_definition.md)) which represents the semantic separation. This modularity enables the sole creation sole search strategies or experiments without immediate start of the computation. In addition, the decoupled compute definition allows one computation to be stopped and to continue with a different worker pool for example to harness free nodes though upscaling over night.
+The framework consists of the three main modules ```parameter_definition``` (see [Preparation of the Target Function](./docs/preparation_of_the_target_function.md) and [Search Strategies](./docs/search_strategies.md)), ```experiment_definition``` see ([Experiment Definition](./docs/experiment_definition.md)) and ```compute_definition``` (see [Compute Definition](./docs/compute_definition.md)) which represents the semantic separation. This modularity enables the sole creation of search strategies or experiments without immediate start of the computation. In addition, the decoupled compute definition allows one computation to be stopped and to continue with a different worker pool for example to harness free nodes through upscaling over night.
 
 ## Table of Contents
 1. [Installation](./docs/installation.md)

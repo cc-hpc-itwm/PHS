@@ -42,34 +42,42 @@ After the setup each parameter set is packed into a single string, passed as an 
 The following full example shows how the transfer works. Beside the usage of different data types, especially ```expr``` and the order become clearer.
 
 ```python
-import phs.parameter_definition  # standalone import
-import phs.parallel_hyperparameter_search  # standalone import
+def main():
+    import phs.parameter_definition  # standalone import
+    import phs.experiment_definition  # standalone import
+    import phs.compute_definition  # standalone import
 
-pardef = phs.parameter_definition.ParameterDefinition()
+    pardef = phs.parameter_definition.ParameterDefinition()
 
-pardef.set_data_types_and_order([('x', float), ('f', 'expr'), ('iterations', int), ('s', str)])
+    pardef.set_data_types_and_order([('x', float), ('f', 'expr'), ('iterations', int), ('s', str)])
 
-pardef.add_individual_parameter_set(
-    number_of_sets=3,
-    set={'x': {'type': 'random', 'bounds': [-5, 5], 'distribution': 'uniform', 'round_digits': 3},
-         'f': {'type': 'random_from_list', 'lst': ['math.sin(x)', 'math.cos(x)', 'math.tan(x)']},
-         'iterations': {'type': 'random', 'bounds': [1, 7], 'distribution': 'uniform', 'round_digits': 0},
-         's': {'type': 'random_from_list', 'lst': ['string1', 'string2', 'string3']}},
-    prevent_duplicate=True)
+    pardef.add_individual_parameter_set(
+        number_of_sets=3,
+        set={'x': {'type': 'random', 'bounds': [-5, 5], 'distribution': 'uniform', 'round_digits': 3},
+             'f': {'type': 'random_from_list', 'lst': ['math.sin(x)', 'math.cos(x)', 'math.tan(x)']},
+             'iterations': {'type': 'random', 'bounds': [1, 7], 'distribution': 'uniform', 'round_digits': 0},
+             's': {'type': 'random_from_list', 'lst': ['string1', 'string2', 'string3']}},
+        prevent_duplicate=True)
 
-pardef.export_parameter_definitions(export_path='absolute/path/to/parent/folder/for/export')
+    expdef = phs.experiment_definition.ExperimentDefinition(
+        experiment_dir='/absolute/path/to/not/yet/existing/folder/your/experiments/should/be/saved',
+        target_module_root_dir='/absolute/path/to/root/dir/in/which/your/test_function/resides',
+        target_module_name='file_name_with_test_function_definition_(without_extension)',
+        target_function_name='data_types_and_order_func',
+        parameter_definitions=pardef.get_parameter_definitions())
 
-hs = phs.parallel_hyperparameter_search.ParallelHyperparameterSearch(
-    **{'experiment_dir': '/absolute/path/to/parent/folder/your/experiments/should/be/saved',
-       'experiment_name': 'data_types_and_order',
-       'target_module_root_dir': '/absolute/path/to/root/dir/in/which/your/test_function/resides',
-       'target_module_name': 'file_name_with_test_function_definition_(without_extension)',
-       'target_function_name': 'data_types_and_order_func',
-       'parameter_definitions_root_dir_in': 'absolute/path/to/parent/folder/for/import',
-       'parallelization': 'local_processes',
-       'redirect_stdout': True})
+    compdef = phs.compute_definition.ComputeDefinition(
+        experiment_dir='/absolute/path/to/folder/with/existing/experiment',
+        parallelization='local_processes',
+        local_processes_num_workers=1,
+        redirect_stdout=True)
 
-hs.start_execution()
+    compdef.start_execution()
+
+
+if __name__ == "__main__":
+    main()
+
 ```
 
 A simple toy target function expects the defined parameters and prints them into the redirected stdout (see [Experiment Definition](experiment_definition.md) for more information about redirecting).
@@ -95,7 +103,7 @@ These three parameter sets packed into a single string each:
 ```
 
 
-Each string is transferred inside the dictionary entry ```parameter['hyperpar']``` to the target function, where it is executed. This corresponds to the functions with hard coded definitions:
+Each string is transferred inside the dictionary entry ```parameter['hyperpar']``` to the target function, where it is executed. This corresponds to following functions with hard coded definitions:
 
 ```python
 import math

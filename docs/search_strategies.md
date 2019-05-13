@@ -42,11 +42,20 @@ inst.add_individual_parameter_set(
          'y': {'type': 'bayesian', 'bounds': [-5, 5], 'round_digits': 3}})
 ```
 
-+ export the definitions
++ export the definitions for later usage
 
 ```python
 pardef.export_parameter_definitions(
     export_path='absolute/path/to/parent/folder/for/export')
+```
++ or directly feed them into an experiment definition
+
+```python
+import phs.experiment_definition
+
+expdef = phs.experiment_definition.ExperimentDefinition(
+    ...
+    parameter_definitions=pardef.get_parameter_definitions())
 ```
 
 ## Detailed Explanation
