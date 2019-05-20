@@ -108,6 +108,39 @@ class ComputeDefinition:
         for func_name in self.monitor_func_name_with_args:
             self.monitor_functions_dict[func_name] = getattr(self.monitor_module, func_name)
 
+        # determine number of parameter sets until first bayesian task if there are any bayesian tasks
+        if self.bayesian_register_frame.isin([1]).any().any(): # check for occurence of '1' in the dataframe
+            for count_row, row in enumerate(self.bayesian_register_frame.itertuples(name=None)):
+                if 1 in row[1:]:
+                    break
+            self.number_of_parameter_sets_until_first_bayesian_task = count_row
+
+            if self.parallelization == 'local_processes':
+                if self.number_of_parameter_sets_until_first_bayesian_task < self.local_processes_num_workers:
+                    phs.utils.format_stderr()
+                    raise ValueError('\n\nThere are ' + str(self.number_of_parameter_sets_until_first_bayesian_task) +
+                                     ' non bayesian parameter sets until the first one with an bayesian task appears but ' +
+                                     str(self.local_processes_num_workers) + ' processes. As a result ' +  str(self.local_processes_num_workers -
+                                     self.number_of_parameter_sets_until_first_bayesian_task) + ' processes would immediately start a bayesian tasks '
+                                     'without any available result.\nPlease increase number of initial non bayesian evaluations or lower number of processes.')
+
+            if self.parallelization == 'dask':
+                from dask.distributed import Client
+                DASK_MASTER_IP = os.environ['DASK_MASTER_IP']
+                DASK_MASTER_PORT = os.environ['DASK_MASTER_PORT']
+                with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='10s') as client:
+                    number_dask_workers = len(client.scheduler_info()['workers'])
+                    if self.number_of_parameter_sets_until_first_bayesian_task < number_dask_workers:
+                        phs.utils.format_stderr()
+                        raise ValueError('\n\nThere are ' + str(self.number_of_parameter_sets_until_first_bayesian_task) +
+                                        ' non bayesian parameter sets until the first one with an bayesian task appears but ' +
+                                        str(number_dask_workers) + ' workers. As a result ' +  str(number_dask_workers -
+                                        self.number_of_parameter_sets_until_first_bayesian_task) + ' workers would immediately start a bayesian task '
+                                        'without any available result.\nPlease increase number of initial non bayesian evaluations or lower number of workers.')
+
+
+
+
         self.get_experiment_state()
 
     def get_experiment_state(self):
