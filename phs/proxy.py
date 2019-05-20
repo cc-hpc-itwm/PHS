@@ -60,7 +60,7 @@ def proxy_function(parallelization,
     np.random.seed(1)  # needed to make all bayesian optimization reproducible
     time.sleep(0.01)
     if auxiliary_information['provide_worker_path'] or auxiliary_information['redirect_stdout']:
-        zero_fill = 6
+        zero_fill = auxiliary_information['zero_fill']
         worker_save_path = auxiliary_information['worker_save_path_root'] + \
             '/' + str(index).zfill(zero_fill) + '/'
         os.mkdir(worker_save_path)
@@ -97,7 +97,7 @@ def proxy_function(parallelization,
                                     arg[key] + "\"", key + "=" + arg[key])
     parameter = {'hyperpar': string, 'worker_save_path': worker_save_path}
     if auxiliary_information['redirect_stdout']:
-        with phs.utils.RedirectStdoutStream(worker_save_path + 'stdout.txt'):
+        with phs.utils.RedirectStdoutStream(worker_save_path + auxiliary_information['std_out_name']):
             result = fun(parameter)
     else:
         result = fun(parameter)

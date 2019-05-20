@@ -48,13 +48,15 @@ class ComputeDefinition:
         for key, value in config_dict.items():
             print('\t{0:40}{1:}'.format(key, value))
 
+        self.zero_fill = 6
+        self.std_out_name = 'stdout.txt'
         self.result_col_name = 'result'
         self.symbol_for_best = '+'
         self.expression_data_type_flag = 'expr'
         self.pp = pprint.PrettyPrinter(indent=4)
 
-        glob = phs.global_names.GlobalNames()
-        self.target_module_root_dir = glob.get_lev1_source(self.experiment_dir)
+        glob_names = phs.global_names.GlobalNames()
+        self.target_module_root_dir = glob_names.get_lev1_source(self.experiment_dir)
         for file in os.listdir(self.target_module_root_dir):
             if file.endswith('.py'):
                 self.target_module_name = os.path.splitext(file)[0]
@@ -63,18 +65,18 @@ class ComputeDefinition:
                 with open(self.target_module_root_dir + '/' + file, 'r') as f:
                     self.target_function_name = f.read()
 
-        self.worker_save_path_root = glob.get_lev1_worker(self.experiment_dir)
-        self.parameter_definitions_root_dir_in = glob.get_lev1_par(self.experiment_dir)
-        self.result_file_path = glob.get_lev1_res(self.experiment_dir) + '/result_frame.csv'
-        self.lock_result_path = glob.get_lev1_res(self.experiment_dir) + '/LOCK'
-        self.additional_information_file_path = glob.get_lev1_res(
+        self.worker_save_path_root = glob_names.get_lev1_worker(self.experiment_dir)
+        self.parameter_definitions_root_dir_in = glob_names.get_lev1_par(self.experiment_dir)
+        self.result_file_path = glob_names.get_lev1_res(self.experiment_dir) + '/result_frame.csv'
+        self.lock_result_path = glob_names.get_lev1_res(self.experiment_dir) + '/LOCK'
+        self.additional_information_file_path = glob_names.get_lev1_res(
             self.experiment_dir) + '/additional_information_frame.csv'
 
         self.path_out_to_data_types_additional_information_dict = self.parameter_definitions_root_dir_in + \
-            glob.get_name_data_types_additional_inf()
+            glob_names.get_name_data_types_additional_inf()
 
         self.path_out_to_bayesian_register_frame = self.parameter_definitions_root_dir_in + \
-            glob.get_name_bay_reg()
+            glob_names.get_name_bay_reg()
 
         self.sub_future = []
         self.result_frame = pd.DataFrame()
@@ -117,7 +119,7 @@ class ComputeDefinition:
         - finished (all parameter sets are computed)
 
         The existence and content of the result frame serves as a marker for the state. If the files does not
-        exist the state is 'clean' and the a method to remove any remaining results will be called. The state is also
+        exist the state is 'clean' and the method to remove any remaining results will be called. The state is also
         'clean' if result file is empty (beside header).
         The state is 'incomplete' if result file has content and not computed indices are found.
         The state is 'finished' if result file has content and all indices are computed.
@@ -197,6 +199,24 @@ class ComputeDefinition:
         self.exp_state = 'clean'
         self.remaining_parameter_index_list = self.parameter_frame.index.values.tolist()
 
+    def _adjust_worker_out_to_remaining_indices(self):
+        for remaining_index in self.remaining_parameter_index_list:
+            remaining_index_worker_out_path = self.worker_save_path_root + '/' + str(remaining_index).zfill(self.zero_fill)
+            if os.path.isdir(remaining_index_worker_out_path):
+                if self.redirect_stdout:
+                    try:
+                        os.remove(remaining_index_worker_out_path + '/' + self.std_out_name)
+                    except:
+                        pass
+                try:
+                    os.rmdir(remaining_index_worker_out_path)
+                except:
+                    phs.utils.format_stderr()
+                    raise ValueError('\n\n' + remaining_index_worker_out_path +
+                                 ' should not contain any files.\nPlease investigate and delete by hand.\n')
+
+
+
     def _initialize_result_file(self):
         header_list = list(self.parameter_frame.columns.values)
         header_string = 'index'
@@ -209,7 +229,7 @@ class ComputeDefinition:
     def start_execution(self):
         """ """
         if self.exp_state == 'finished':
-            print('\n\tNothing to compute, all parameter sets have been computed.')
+            print('\n\tNothing to do, all parameter sets have been computed.')
             return 1
         elif self.exp_state == 'clean':
             self._initialize_result_file()
@@ -217,6 +237,7 @@ class ComputeDefinition:
         # in case of 'incomplete' state the initialization has to be skipped
         elif self.exp_state == 'incomplete':
             self.append_additional_information_init = True
+            self._adjust_worker_out_to_remaining_indices()
 
         if not os.path.isdir(self.worker_save_path_root) and (self.provide_worker_path or self.redirect_stdout):
             os.mkdir(self.worker_save_path_root)
@@ -303,7 +324,9 @@ class ComputeDefinition:
             bayesian_register_dict_i = list_of_bayesian_register_dicts[i]
             auxiliary_information = {'provide_worker_path': self.provide_worker_path,
                                      'redirect_stdout': self.redirect_stdout,
-                                     'worker_save_path_root': self.worker_save_path_root}
+                                     'std_out_name': self.std_out_name,
+                                     'worker_save_path_root': self.worker_save_path_root,
+                                     'zero_fill': self.zero_fill}
             if not any(bayesian_register_dict_i.values()):
                 self.sub_future.append(
                     executor.submit(phs.proxy.proxy_function,
