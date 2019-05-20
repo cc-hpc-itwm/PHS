@@ -6,7 +6,6 @@ import time
 import imageio
 import matplotlib.pyplot as plt
 from matplotlib import cm, colors, gridspec
-from matplotlib.mlab import griddata
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import ConnectionPatch
