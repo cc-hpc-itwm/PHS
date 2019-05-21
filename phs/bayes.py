@@ -67,15 +67,20 @@ def compute_bayesian_suggestion(at_index,
 
         if os.path.exists(lock_result_path) and os.path.isdir(lock_result_path):
             os.rmdir(lock_result_path)
-        if not bayesian_wait_for_all:
-            break
+
+        number_current_results = len(current_result_frame.index)
+        if number_current_results == 0: # check if not a single result is available
+            time.sleep(5) # wait and read again
         else:
-            if at_index <= len(current_result_frame.index):
+            if not bayesian_wait_for_all:
                 break
             else:
-                time.sleep(0.5)
+                if at_index <= number_current_results:
+                    break
+                else:
+                    time.sleep(0.1)
 
-    # print('bayesian at index %d sees %d results.' % (at_index, len(current_result_frame.index)))
+    # print('bayesian at index %d sees %d results.' % (at_index, number_current_results))
     # print(current_result_frame)
 
     # important: values in bounds must have the same order as in xp according to the parameter names (col_names) they
