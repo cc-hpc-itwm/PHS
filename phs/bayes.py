@@ -58,7 +58,7 @@ def compute_bayesian_suggestion(at_index,
                 break
             except OSError:
                 # print('read locked')
-                time.sleep(0.5)
+                time.sleep(0.1)
                 continue
 
         with open(result_file_path, 'r') as f:

@@ -79,7 +79,6 @@ class ComputeDefinition:
             glob_names.get_name_bay_reg()
 
         self.sub_future = []
-        self.result_frame = pd.DataFrame()
         self.additional_information_frame = pd.DataFrame()
 
         (self.parameter_frame,
@@ -168,14 +167,14 @@ class ComputeDefinition:
             self._ensure_clean_state()
         else:
             with open(self.result_file_path, 'r') as f:
-                self.result_frame = pd.read_csv(f, index_col='index')
+                result_frame = pd.read_csv(f, index_col='index')
             with open(self.additional_information_file_path, 'r') as f:
                 self.additional_information_frame = pd.read_csv(f, index_col='index')
             # 'clean' state if result file is empty (beside header)
-            if self.result_frame.empty:
+            if result_frame.empty:
                 self._ensure_clean_state()
             else:
-                computed_indices = self.result_frame.index.values.tolist()
+                computed_indices = result_frame.index.values.tolist()
 
                 self.remaining_parameter_index_list = list(
                     set(all_indices).difference(computed_indices))
@@ -370,6 +369,7 @@ class ComputeDefinition:
                                     data_types_ordered_list=self.data_types_ordered_list,
                                     expression_data_type_flag=self.expression_data_type_flag,
                                     auxiliary_information=auxiliary_information,
+                                    paths=paths,
                                     **self.additional_submit_kwargs))
             else:
                 bayesian_register_dict_i = list_of_bayesian_register_dicts[i]
@@ -415,53 +415,9 @@ class ComputeDefinition:
             print('[{0}] | {1:>3}% | {2:>6} of {3:>6}' .format(
                 '='*progress_bar_signs + ' '*(progress_bar_len-progress_bar_signs),
                 int(round(finished_portion*100)), count_finished, len(self.sub_future)), end='\r')
-            self.append_result(f)
             self.append_additional_information(f)
             self.monitor_functions()
         print('\n')
-        return 1
-
-    def append_result(self, future):
-        """
-
-        Parameters
-        ----------
-        future :
-
-
-        Returns
-        -------
-
-        """
-        index = (future.result())[0]
-        current_result_dict = self.parameter_frame.iloc[[index]].to_dict(orient='list')
-        if (future.result())[5] is not None:
-            bayesian_replacement_dict = (future.result())[5]
-            for col_name in bayesian_replacement_dict:
-                current_result_dict[col_name] = bayesian_replacement_dict[col_name]
-        current_result_dict[self.result_col_name] = (future.result())[1]
-        current_result_df = pd.DataFrame(current_result_dict, index=[index])
-
-        self.result_frame = self.result_frame.append(
-            current_result_df, ignore_index=False, verify_integrity=False)
-
-        # self.result_frame = self.result_frame.applymap(
-        #     lambda x: round(x, 4) if isinstance(x, (int, float)) else x)
-        while True:
-            try:
-                os.mkdir(self.lock_result_path)
-                break
-            except OSError:
-                # print('write locked')
-                time.sleep(0.5)
-                continue
-
-        with open(self.result_file_path, 'a') as f:
-            current_result_df.to_csv(f, header=False, index=True)
-
-        if os.path.exists(self.lock_result_path) and os.path.isdir(self.lock_result_path):
-            os.rmdir(self.lock_result_path)
-
         return 1
 
     def append_additional_information(self, future):
@@ -516,10 +472,26 @@ class ComputeDefinition:
 
     def monitor_functions(self):
         """ """
+        if self.monitor_func_name_with_args:
+            while True:
+                try:
+                    os.mkdir(self.lock_result_path)
+                    break
+                except OSError:
+                    # print('read locked')
+                    time.sleep(0.5)
+                    continue
+
+            with open(result_file_path, 'r') as f:
+                current_result_frame = pd.read_csv(f, index_col='index')
+
+            if os.path.exists(self.lock_result_path) and os.path.isdir(self.lock_result_path):
+                os.rmdir(self.lock_result_path)
+
         for monitor_function_string in self.monitor_func_name_with_args:
             kwargs_dict = self.monitor_func_name_with_args[monitor_function_string]
             kwargs_dict['path_out'] = self.monitor_path
-            kwargs_dict['result_frame'] = self.result_frame
+            kwargs_dict['result_frame'] = current_result_frame
             kwargs_dict['additional_information_frame'] = self.additional_information_frame
             kwargs_dict['path_to_bayesian_register_frame'] = self.path_out_to_bayesian_register_frame
             self.monitor_functions_dict[monitor_function_string](**kwargs_dict)

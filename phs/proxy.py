@@ -6,6 +6,7 @@ import pandas as pd
 from dask.distributed import get_worker
 
 import phs.bayes
+import phs.append_result
 import phs.utils
 
 
@@ -89,7 +90,7 @@ def proxy_function(parallelization,
             arg[key] = int(arg[key])
     string = js.dumps(arg, separators=['\n', '='])
     string = string[1:-1]  # strips {}
-    for key in arg:
+    for key in arg: # dicts are ordered in python 3.7+. The order was set in parameter_definition.py
         if data_types_unordered_dict[key] != expression_data_type_flag:
             string = string.replace("\"" + key + "\"", key)
         else:
@@ -109,5 +110,12 @@ def proxy_function(parallelization,
         worker = os.uname()[1]
     elif parallelization == 'dask':
         worker = get_worker().name  # The worker on which this task is running
+
+    phs.append_result.append_result(index=index,
+                                    parameter_dict=arg,
+                                    result_col_name=result_col_name,
+                                    result=result,
+                                    file_path=paths['result_file_path'],
+                                    lock_result_path=paths['lock_result_path'])
 
     return (index, result, start_time, end_time, worker, bayesian_replacement_dict)
