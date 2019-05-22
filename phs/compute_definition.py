@@ -8,12 +8,14 @@ import pprint
 import glob
 import ntpath
 import shutil
+import warnings
 
 import phs.proxy
 import phs.bayes
 import phs.utils
 import phs.utils_parameter_io
 import phs.global_names
+import phs.progress_bar
 
 
 class ComputeDefinition:
@@ -36,6 +38,8 @@ class ComputeDefinition:
             'provide_worker_path', True, config_dict)
         self.redirect_stdout = phs.utils.set_default_value_to_optional_key(
             'redirect_stdout', True, config_dict)
+        self.ignore_warnings = phs.utils.set_default_value_to_optional_key(
+            'ignore_warnings', True, config_dict)
         self.bayesian_wait_for_all = phs.utils.set_default_value_to_optional_key(
             'bayesian_wait_for_all', False, config_dict)
         self.monitor_root_dir = phs.utils.set_default_value_to_optional_key(
@@ -46,7 +50,12 @@ class ComputeDefinition:
             'monitor_func_name_with_args', {}, config_dict)
 
         for key, value in config_dict.items():
+            if key == 'local_processes_num_workers' and config_dict['parallelization'] != 'local_processes':
+                continue
             print('\t{0:40}{1:}'.format(key, value))
+
+        if self.ignore_warnings:
+            warnings.simplefilter("ignore")
 
         self.zero_fill = 6
         self.std_out_name = 'stdout.txt'
@@ -114,30 +123,6 @@ class ComputeDefinition:
                     break
             self.number_of_parameter_sets_until_first_bayesian_task = count_row
 
-            if self.parallelization == 'local_processes':
-                if self.number_of_parameter_sets_until_first_bayesian_task < self.local_processes_num_workers:
-                    phs.utils.format_stderr()
-                    raise ValueError('\n\nThere are ' + str(self.number_of_parameter_sets_until_first_bayesian_task) +
-                                     ' non bayesian parameter sets until the first one with an bayesian task appears but ' +
-                                     str(self.local_processes_num_workers) + ' processes. As a result ' +  str(self.local_processes_num_workers -
-                                     self.number_of_parameter_sets_until_first_bayesian_task) + ' processes would immediately start a bayesian tasks '
-                                     'without any available result.\nPlease increase number of initial non bayesian evaluations or lower number of processes.')
-
-            if self.parallelization == 'dask':
-                from dask.distributed import Client
-                DASK_MASTER_IP = os.environ['DASK_MASTER_IP']
-                DASK_MASTER_PORT = os.environ['DASK_MASTER_PORT']
-                with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='10s') as client:
-                    number_dask_workers = len(client.scheduler_info()['workers'])
-                    if self.number_of_parameter_sets_until_first_bayesian_task < number_dask_workers:
-                        phs.utils.format_stderr()
-                        raise ValueError('\n\nThere are ' + str(self.number_of_parameter_sets_until_first_bayesian_task) +
-                                        ' non bayesian parameter sets until the first one with an bayesian task appears but ' +
-                                        str(number_dask_workers) + ' workers. As a result ' +  str(number_dask_workers -
-                                        self.number_of_parameter_sets_until_first_bayesian_task) + ' workers would immediately start a bayesian task '
-                                        'without any available result.\nPlease increase number of initial non bayesian evaluations or lower number of workers.')
-
-
 
 
         self.get_experiment_state()
@@ -189,7 +174,7 @@ class ComputeDefinition:
         self.remaining_parameter_index_list.sort()
 
         print('\t{0:40}{1:}'.format('state', self.exp_state))
-        print('\t{0:40}{1:}'.format('number of all parameter sets', len(all_indices)))
+        print('\t{0:40}{1:}'.format('total number of parameter sets', len(all_indices)))
         print('\t{0:40}{1:}'.format('number of computed parameter sets', len(computed_indices)))
 
     def _ensure_clean_state(self):
@@ -283,6 +268,10 @@ class ComputeDefinition:
             from concurrent.futures import wait, as_completed
             with PoolExecutor(max_workers=self.local_processes_num_workers) as executor:
                 self.pp.pprint(executor.__dict__)
+
+                if self.number_of_parameter_sets_until_first_bayesian_task < self.local_processes_num_workers:
+                    phs.utils.idle_workers_warning(self.number_of_parameter_sets_until_first_bayesian_task, self.local_processes_num_workers)
+
                 self.start_execution_kernel(executor, wait, as_completed)
                 self.as_completed_functions(as_completed)
 
@@ -302,6 +291,11 @@ class ComputeDefinition:
             with Client(DASK_MASTER_IP + ':' + DASK_MASTER_PORT, timeout='10s') as client:
                 client.restart()
                 self.pp.pprint(client.scheduler_info())
+
+                number_dask_workers = len(client.scheduler_info()['workers'])
+                if self.number_of_parameter_sets_until_first_bayesian_task < number_dask_workers:
+                    phs.utils.idle_workers_warning(self.number_of_parameter_sets_until_first_bayesian_task, number_dask_workers)
+
                 client.upload_file(os.path.abspath(phs.bayes.__file__))  # probably not necessary
                 client.upload_file(os.path.abspath(phs.proxy.__file__))  # probably not necessary
                 client.upload_file(os.path.abspath(phs.utils.__file__))  # probably not necessary
@@ -407,14 +401,11 @@ class ComputeDefinition:
 
         """
         print('', end='\n')
+
         sub_future_len = len(self.sub_future)
         progress_bar_len = 40
         for count_finished, f in enumerate(as_completed(self.sub_future), 1):
-            finished_portion = count_finished/sub_future_len
-            progress_bar_signs = int(round(progress_bar_len * finished_portion))
-            print('[{0}] | {1:>3}% | {2:>6} of {3:>6}' .format(
-                '='*progress_bar_signs + ' '*(progress_bar_len-progress_bar_signs),
-                int(round(finished_portion*100)), count_finished, len(self.sub_future)), end='\r')
+            phs.progress_bar.progress_bar(progress=count_finished, total=len(self.sub_future))
             self.append_additional_information(f)
             self.monitor_functions()
         print('\n')

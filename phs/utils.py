@@ -48,6 +48,27 @@ def print_subsection(header):
     sys.stdout.write(RESET)
 
 
+def idle_workers_warning(number_of_parameter_sets_until_first_bayesian_task, number_workers):
+    """
+    Print a orange section header formated with ':' filling up the complete terminal width.
+    If terminal width cannot be If the terminal size cannot be successfully queried,
+    either because the system doesn’t support querying, or because we are not connected to a terminal,
+    the default value is (80, 24) which is the default size used by many terminal emulators.
+    """
+    terminal_cols, _ = shutil.get_terminal_size()
+    sys.stdout.write(ORANGE)
+    print('{::^{width}}' .format('', width=terminal_cols))
+    print('{::^{width}}' .format(' ' + 'Warning' + ' ', width=terminal_cols))
+    print('{::^{width}}' .format('', width=terminal_cols))
+    print('\tThere are ' + str(number_of_parameter_sets_until_first_bayesian_task) +
+                                    ' non bayesian parameter sets until the first with a bayesian task appears but ' +
+                                    str(number_workers) + ' workers/processes were assigned.\n\tAs a result ' +  str(number_workers -
+                                    number_of_parameter_sets_until_first_bayesian_task) + ' workers/processes would immediately start a bayesian task '
+                                    'but instead have to wait because no results are available yet.\n\tThis will cause these workers to idle.'
+                                    '\n\tIncrease number of initial non bayesian evaluations or decrease the number of workers for more efficiency.')
+    sys.stdout.write(RESET)
+
+
 def format_stderr():
     sys.stderr.write(RED)
 

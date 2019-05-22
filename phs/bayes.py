@@ -100,11 +100,17 @@ def compute_bayesian_suggestion(at_index,
 
     kernel = gp.kernels.Matern(nu=2.5)
     alpha = 1e-6
-    model = gp.GaussianProcessRegressor(
-        kernel=kernel, alpha=alpha, n_restarts_optimizer=25, normalize_y=True)
+    model = gp.GaussianProcessRegressor(kernel=kernel,
+                                        alpha=alpha,
+                                        n_restarts_optimizer=25,
+                                        normalize_y=True)
     model.fit(xp, yp)
-    next_sample = sample_next_hyperparameter(
-        expected_improvement, model, yp, greater_is_better=False, bounds=bounds, n_restarts=100)
+    next_sample = get_next_sample(acquisition_function=expected_improvement,
+                                             gaussian_process=model,
+                                             evaluated_loss=yp,
+                                             maximize=False,
+                                             bounds=bounds,
+                                             restarts=100)
 
     bayesian_replacement_dict = {}
     for i, col in enumerate(bayesian_col_name_list):
@@ -119,24 +125,24 @@ def compute_bayesian_suggestion(at_index,
     return bayesian_replacement_dict
 
 
-def sample_next_hyperparameter(acquisition_func,
+def get_next_sample(acquisition_function,
                                gaussian_process,
                                evaluated_loss,
-                               greater_is_better,
+                               maximize,
                                bounds=(0, 10),
-                               n_restarts=25):
+                               restarts=25):
 
     best_x = None
     best_acquisition_value = None
-    n_params = bounds.shape[0]
+    number_parameters = bounds.shape[0]
 
-    for starting_point in np.random.uniform(bounds[:, 0], bounds[:, 1], size=(n_restarts, n_params)):
+    for starting_point in np.random.uniform(bounds[:, 0], bounds[:, 1], size=(restarts, number_parameters)):
 
-        minimize_obj = minimize(fun=acquisition_func,
+        minimize_obj = minimize(fun=acquisition_function,
                                 x0=starting_point.reshape(1, -1),
                                 bounds=bounds,
                                 method='L-BFGS-B',
-                                args=(gaussian_process, evaluated_loss, greater_is_better, n_params))
+                                args=(gaussian_process, evaluated_loss, maximize, number_parameters))
 
         if best_acquisition_value is None:
             best_acquisition_value = minimize_obj.fun
@@ -146,25 +152,27 @@ def sample_next_hyperparameter(acquisition_func,
     return best_x
 
 
-def expected_improvement(x, gaussian_process, evaluated_loss, greater_is_better=False, n_params=1):
+def expected_improvement(x, gaussian_process, evaluated_loss, maximize=False, number_parameters=1):
 
-    x_to_predict = x.reshape(-1, n_params)
+    x_to_predict = x.reshape(-1, number_parameters)
 
-    mu, sigma = gaussian_process.predict(x_to_predict, return_std=True)
+    mean, std_dev = gaussian_process.predict(x_to_predict, return_std=True)
 
-    if greater_is_better:
+    if maximize:
         loss_optimum = np.max(evaluated_loss)
     else:
         loss_optimum = np.min(evaluated_loss)
 
-    scaling_factor = (-1) ** (not greater_is_better)
+    if maximize:
+        factor = 1
+    else:
+        factor = -1
 
-    # In case sigma equals zero
-    with np.errstate(divide='ignore'):
+    with np.errstate(divide='ignore'): # overcome std_dev = 0
         xi = 0.0
-        Z = scaling_factor * (mu - loss_optimum - xi) / sigma
-        expected_improvement = scaling_factor * \
-            (mu - loss_optimum - xi) * norm.cdf(Z) + sigma * norm.pdf(Z)
-        expected_improvement[sigma == 0.0] == 0.0
+        Z = factor * (mean - loss_optimum - xi) / std_dev
+        expected_improvement = factor * \
+            (mean - loss_optimum - xi) * norm.cdf(Z) + std_dev * norm.pdf(Z)
+        expected_improvement[std_dev == 0.0] == 0.0
 
     return -1 * expected_improvement
