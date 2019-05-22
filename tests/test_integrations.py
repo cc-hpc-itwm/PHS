@@ -62,3 +62,11 @@ def test_parameter_definition():
 def test_post_pro_demo():
     template_test_wrapper(func=def_post_pro_demo.def_post_pro_demo,
                           relative_fixture_path='/fixtures/fix_post_pro_demo')
+
+
+# manual tests have to be performed from directory phs: python tests/test_integrations.py
+if __name__ == '__main__':
+    test_quick_start()
+    test_data_types_and_order()
+    test_parameter_definition()
+    test_post_pro_demo()

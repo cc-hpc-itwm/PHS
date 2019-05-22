@@ -122,6 +122,8 @@ class ComputeDefinition:
                 if 1 in row[1:]:
                     break
             self.number_of_parameter_sets_until_first_bayesian_task = count_row
+        else:
+            self.number_of_parameter_sets_until_first_bayesian_task = None
 
 
 
@@ -269,8 +271,9 @@ class ComputeDefinition:
             with PoolExecutor(max_workers=self.local_processes_num_workers) as executor:
                 self.pp.pprint(executor.__dict__)
 
-                if self.number_of_parameter_sets_until_first_bayesian_task < self.local_processes_num_workers:
-                    phs.utils.idle_workers_warning(self.number_of_parameter_sets_until_first_bayesian_task, self.local_processes_num_workers)
+                if self.number_of_parameter_sets_until_first_bayesian_task is not None:
+                    if self.number_of_parameter_sets_until_first_bayesian_task < self.local_processes_num_workers:
+                        phs.utils.idle_workers_warning(self.number_of_parameter_sets_until_first_bayesian_task, self.local_processes_num_workers)
 
                 self.start_execution_kernel(executor, wait, as_completed)
                 self.as_completed_functions(as_completed)
@@ -293,8 +296,9 @@ class ComputeDefinition:
                 self.pp.pprint(client.scheduler_info())
 
                 number_dask_workers = len(client.scheduler_info()['workers'])
-                if self.number_of_parameter_sets_until_first_bayesian_task < number_dask_workers:
-                    phs.utils.idle_workers_warning(self.number_of_parameter_sets_until_first_bayesian_task, number_dask_workers)
+                if self.number_of_parameter_sets_until_first_bayesian_task is not None:
+                    if self.number_of_parameter_sets_until_first_bayesian_task < number_dask_workers :
+                        phs.utils.idle_workers_warning(self.number_of_parameter_sets_until_first_bayesian_task, number_dask_workers)
 
                 client.upload_file(os.path.abspath(phs.bayes.__file__))  # probably not necessary
                 client.upload_file(os.path.abspath(phs.proxy.__file__))  # probably not necessary
