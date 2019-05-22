@@ -1,8 +1,8 @@
-CARME END USER LICENSE AGREEMENT
+PHS END USER LICENSE AGREEMENT
 November 06, 2018
 
 
-PLEASE READ THIS LICENSE AGREEMENT CAREFULLY. BY USING THE SOFTWARE CARME YOU
+PLEASE READ THIS LICENSE AGREEMENT CAREFULLY. BY USING THE SOFTWARE PHS YOU
 ACCEPT ALL TERMS OF THE LICENSE AGREEMENT. IF YOU DO NOT AGREE TO THE TERMS OF
 THIS LICENSE, DO NOT INSTALL, COPY, OR USE THE SOFTWARE.
 
@@ -14,12 +14,12 @@ e.V., Hansastr. 27c, 80686 Muenchen, Germany, as legal entity of Fraunhofer-
 Institut fuer Techno- und Wirtschaftsmathematik, Fraunhofer-Platz 1, 
 67663 Kaiserslautern, Germany.
 
-1.2) LICENSEE: The user of CARME under this License Agreement.
+1.2) LICENSEE: The user of PHS under this License Agreement.
 
-1.3) LICENSED SOFTWARE: The Software CARME in source code and object code form
+1.3) LICENSED SOFTWARE: The Software PHS in source code and object code form
 including all executable programs.
 
-1.4) DOCUMENTATION: The CARME user's guide, e-mails and other explanatory
+1.4) DOCUMENTATION: The PHS user's guide, e-mails and other explanatory
 materials accompanying the LICENSED SOFTWARE in printed or electronic form.
 
 
