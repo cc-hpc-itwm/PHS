@@ -42,3 +42,8 @@ Fraunhofer-Institut für Techno- und Wirtschaftsmathematik ITWM
 Fraunhofer-Platz 1, 67663 Kaiserslautern, Germany  
 Tel: +49 631 31600-4942, Fax: +49 631 31600-5942  
 <peter.michael.habelitz@itwm.fraunhofer.de>
+
+## Paper
+PHS paper: [https://arxiv.org/pdf/2002.11429](https://arxiv.org/pdf/2002.11429)
+
+***Habelitz, Peter Michael, and Janis Keuper. "PHS: A Toolbox for Parellel Hyperparameter Search." arXiv preprint arXiv:2002.11429 (2020).***
