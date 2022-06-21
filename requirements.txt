@@ -19,7 +19,7 @@ matplotlib
 # phs/monitor_functions.py: 1
 # phs/parallel_hyperparameter_search.py: 3
 # phs/proxy.py: 4
-numpy == 1.16.2
+numpy == 1.22.0
 
 # phs/bayes.py: 4
 # phs/monitor_functions.py: 2
