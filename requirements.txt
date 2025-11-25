@@ -5,7 +5,7 @@ distributed == 1.25.1
 # phs/functional_test_dask.py: 3
 # phs/parallel_hyperparameter_search.py: 326
 # phs/proxy.py: 6
-dask == 1.1.5
+dask >= 2021.10.0
 
 # phs/monitor_functions.py: 6
 # phs/post_processing.py: 5
